@@ -4,8 +4,10 @@ import data_processing
 from SignalProcessingProcess import SPP
 from TrackingProcess import TrackingProcess
 import backend
-import os
-import sys
+import firebase
+from geopy.geocoders import Nominatim
+import time
+
 
 if __name__ == "__main__":
 
@@ -19,20 +21,31 @@ if __name__ == "__main__":
         data_process = mp.Process(target=SPP, args=(data_queue,SP_data_queue,))
         tracking_process = mp.Process(target=TrackingProcess, args=(SP_data_queue,tracking_queue,))
         #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
-     
+       
+        loc = Nominatim(user_agent="GetLoc")
+        getLoc = loc.geocode("Trondheim")
+        firebase.ref.child("info").update({"lat": getLoc.latitude})
+        firebase.ref.child("info").update({"lng": getLoc.longitude})
 
         data_fetch.start()
         data_process.start()
         tracking_process.start()
         #data_backend.start()
-        data_fetch.join()
-        data_process.join()
-        tracking_process.join()
-        #data_backend.join()
+        while True:
+            firebase.ref.child("info").update({"status": "running"})
+            firebase.ref.child("info").update({"time": time.time()})
+            time.sleep(60)
+            
+            
+
 
 
     except KeyboardInterrupt:   
+        data_fetch.join()
+        data_process.join()
+        data_backend.join()
         print('Keyboard interrupt received from user')
+        firebase.ref.child("info").update({"status": "offline"})
         pass
         
         # data_process.close()
