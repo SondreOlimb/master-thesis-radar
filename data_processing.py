@@ -16,7 +16,7 @@ def read_TDAT(data):
 
             } )
     if len(data_arr)==0: return 0
-    return {int(time.time()):data_arr}
+    return [int(time.time()),data_arr]
     
 
 def read_PPRM(data):
