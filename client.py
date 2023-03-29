@@ -2,25 +2,10 @@ import socket, time
 HOST = "192.168.16.2"  # The server's hostname or IP address
 PORT = 6172  # The port used by the server
 import numpy as np
-from scipy.signal import detrend
+from Utils import *
 
 
-def read_RADC(data,length):
-    
-                    
-   
-    data_RADC = np.frombuffer(data,dtype=np.uint16)
-    data_RADC = data_RADC.reshape(3,256,512)
-    data_RADC_I_raw = data_RADC[:,:,::2]
-    data_RADC_Q_raw = data_RADC[:,:,1::2]
-    data_RADC_I = detrend(data_RADC_I_raw, axis=2)
-    data_RADC_Q = detrend(data_RADC_Q_raw, axis=2)
-                    
-    data_RADC_I_mean = data_RADC_I
-    data_RADC_Q_mean = data_RADC_Q
-    return data_RADC_I_mean[:,:,:] + 1j*data_RADC_Q_mean[:,:,:]
-    
-    
+
 
 
 class MySocket:
@@ -105,12 +90,13 @@ def fetch_data(data_queue):
         try:
             
             data_info=client_socket.myreceive(8)
-            print(data_info)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
-            print(length)
+            data = client_socket.myreceive(length)
+            
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 ):
-                data_RADC = read_RADC( client_socket.myreceive(length), length)
-                data_queue.put(data_RADC)
+                RADC_data = read_RADC(data,length)
+                data_queue.put(RADC_data)
+        
         
         except KeyboardInterrupt:
             if connection:
@@ -118,10 +104,9 @@ def fetch_data(data_queue):
                     
             print("Exiting client")      
             break
-        except Exception as e:
-            print(e)
         if not connection:
             break
+        
     return    
 
 

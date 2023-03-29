@@ -13,9 +13,14 @@ def SignalProcesingAlgorithem(data,argArtifacts):
     return detections_cord , detections_map
 
 def Artifacts(data):
+    print("art")
     range_cube =  RangeCompression(data,axis=1)
-    linear, mag = DopplerProcessing(range_cube, axis=0,isClutterRemoval=True,removeArtifacts=False)
+    print("art 1")
+    linear = DopplerProcessing(range_cube, axis=0,isClutterRemoval=True,removeArtifacts=False)
+    print("art 2")
     old = np.abs(linear).copy()
+    print("art 3")
     argArtifacts = np.nonzero(old >4*np.mean(old[:,50]))
+    print("art done")
     return argArtifacts
 
