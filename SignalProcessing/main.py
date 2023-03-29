@@ -4,14 +4,17 @@ import numpy as np
 from .RangeCompression import RangeCompression
 from .DopplerProcessing import DopplerProcessing
 from .CFAR import CFAR_1D
+from Plots import PlotCFAR
+
 
 def SignalProcesingAlgorithem(data,argArtifacts):
-    print(data.shape)
+    
     range_cube =  RangeCompression(data,axis=1)
     linear= DopplerProcessing(range_cube, axis=0,isClutterRemoval=True)
     linear[argArtifacts] = 1e-10
     detections_map,P_detections,detections, detections_cord,det_tuples = CFAR_1D(np.abs(linear).copy(), 4, 8, 0.01)
-    return detections_cord , detections_map
+    #PlotCFAR(detections_map)
+    return detections_cord 
 
 def Artifacts(data):
    

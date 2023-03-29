@@ -16,4 +16,5 @@ def TrackingProcess(SP_data_queue,tracking_queue):
             detections,tar = initiat.main(unused_measurments)
             if(len(detections)>0):
                 tracker.new_track(tar)
+            print(tracks)
         tracking_queue.put(tracks)

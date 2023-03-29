@@ -138,12 +138,12 @@ class Initiator:
             assert delta_r_real < 10, f"delta_r_real is too big: {track} \n {delta_r_real} \n {track.track_history_range}"
             if(sum(track.track_history) < N and len(track.track_history) >= M ):
                 delete_tracks.append(track)
-                print("deleted",track)
+                #print("deleted",track)
               
             elif sum(track.track_history)>=N: #q and delta_r_real >=abs(delta_r_theoretical)*len(track.track_history) *0.7:
-                print("\n",delta_r_real ,abs(delta_r_theoretical*len(track.track_history) *0.9))
-                print(track.track_history_range)
-                print("CONFIRMED",track)
+                # print("\n",delta_r_real ,abs(delta_r_theoretical*len(track.track_history) *0.9))
+                # print(track.track_history_range)
+                # print("CONFIRMED",track)
                 #track.track_history = deque([1,1,1,1,1])
                 confirmed_tracks.append([track.kalman_filter.x[0],track.kalman_filter.x[1]])
                 #potential_tracks.append(track)

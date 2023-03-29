@@ -124,20 +124,20 @@ class TOMHT:
         #print("Track maintainance")
         #print(track.track_history_range)
         #print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-        if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
-            print("REMOVED")
-            print("Removed",track,score)
-            print("Track maintainance")
-            print(track.track_history_range)
-            print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-            #input("Press Enter to continue...")
-            return False
-        if score > treshold:
-            print("Removed",track,score)
-            print("Track maintainance")
-            print(track.track_history_range)
-            print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-            #input("Press Enter to continue...")
+        # if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
+        #     print("REMOVED")
+        #     print("Removed",track,score)
+        #     print("Track maintainance")
+        #     print(track.track_history_range)
+        #     print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
+        #     #input("Press Enter to continue...")
+        #     return False
+        # if score > treshold:
+        #     print("Removed",track,score)
+        #     print("Track maintainance")
+        #     print(track.track_history_range)
+        #     print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
+        #     #input("Press Enter to continue...")
         return score < treshold 
 
 
@@ -198,7 +198,7 @@ class TOMHT:
                     score = track.track_three.nodes[node]["score"]
                     best_node = node
             
-            print(track.track_three.nodes[best_node]["track"],"Score",track.track_three.nodes[node]["score"],track.track_three.nodes[best_node]["label"])
+            #print(track.track_three.nodes[best_node]["track"],"Score",track.track_three.nodes[node]["score"],track.track_three.nodes[best_node]["label"])
             #print("MHT",track.track_three.nodes[best_node]["track"])
             
            
