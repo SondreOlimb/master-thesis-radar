@@ -43,7 +43,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:   
         data_fetch.join()
         data_process.join()
-        data_backend.join()
+        tracking_process.join()
+        #data_backend.join()
         print('Keyboard interrupt received from user')
         firebase.ref.child("info").update({"status": "offline"})
         pass

@@ -1,5 +1,5 @@
 from Tracking.TOMHT import TOMHT
-from Tracking.Initiator import initiat
+from Tracking.Initiator import Initiator
 
 def TrackingProcess(SP_data_queue,tracking_queue):
     # Path: TrackingProcess.py
@@ -7,6 +7,7 @@ def TrackingProcess(SP_data_queue,tracking_queue):
     # Input: signal
     # Output: signal
     # Description: This function is used to process the signal
+    initiat = Initiator(3,5)
     tracker = TOMHT()
     while True:
         data = SP_data_queue.get()

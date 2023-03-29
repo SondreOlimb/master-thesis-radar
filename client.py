@@ -6,10 +6,10 @@ from scipy.signal import detrend
 
 
 def read_RADC(data,length):
-    length = data["length"]
+    
                     
-    data_RADC = data["data"][8:8+length]
-    data_RADC = np.frombuffer(data_RADC,dtype=np.uint16)
+   
+    data_RADC = np.frombuffer(data,dtype=np.uint16)
     data_RADC = data_RADC.reshape(3,256,512)
     data_RADC_I_raw = data_RADC[:,:,::2]
     data_RADC_Q_raw = data_RADC[:,:,1::2]
@@ -105,8 +105,9 @@ def fetch_data(data_queue):
         try:
             
             data_info=client_socket.myreceive(8)
+            print(data_info)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
-        
+            print(length)
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 ):
                 data_RADC = read_RADC( client_socket.myreceive(length), length)
                 data_queue.put(data_RADC)
@@ -117,6 +118,8 @@ def fetch_data(data_queue):
                     
             print("Exiting client")      
             break
+        except Exception as e:
+            print(e)
         if not connection:
             break
     return    

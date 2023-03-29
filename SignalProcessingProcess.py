@@ -1,6 +1,6 @@
 from SignalProcessing.main import SignalProcesingAlgorithem,Artifacts
 
-def SignalProcessing(data_queue,detection_queue):
+def SPP(data_queue,detection_queue):
     # Path: SignalProcessingProcess.py
     # Function: SignalProcesing
     # Input: signal
