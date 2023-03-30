@@ -62,6 +62,8 @@ class Track_Tree:
             if not descendants:
                 leaf_nodes.add(node)
         return leaf_nodes
+    def __str__(self):
+        return str(self.track_three.nodes.data())
      
 # Define a class for the tracker
 class TOMHT:
@@ -124,14 +126,14 @@ class TOMHT:
         #print("Track maintainance")
         #print(track.track_history_range)
         #print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-        # if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
-        #     print("REMOVED")
-        #     print("Removed",track,score)
-        #     print("Track maintainance")
-        #     print(track.track_history_range)
-        #     print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-        #     #input("Press Enter to continue...")
-        #     return False
+        if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
+            # print("REMOVED")
+            # print("Removed",track,score)
+            # print("Track maintainance")
+            # print(track.track_history_range)
+            # print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
+            #input("Press Enter to continue...")
+            return False
         # if score > treshold:
         #     print("Removed",track,score)
         #     print("Track maintainance")
@@ -146,8 +148,9 @@ class TOMHT:
         #print("main")
         tracking_cords = []
         used_measurements = []
+        tracks_return = []
         if len(self.tracks) == 0:
-            return [],measurements
+            return [],measurements ,self.tracks
         for track in self.tracks:
             
             #create zero hypothesis
@@ -205,6 +208,7 @@ class TOMHT:
             if self.track_maintainance(track.track_three.nodes[best_node]["score"], track.track_three.nodes[best_node]["track"]):
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
+                tracks_return.append(track.track_three.nodes[best_node]["track"])
                 self.pruning(track.track_three,best_node)
             else:
                 self.tracks.remove(track)
@@ -213,9 +217,8 @@ class TOMHT:
         
         
         unused = np.delete(measurements, used_measurements, axis=0)
-       
         
         #input("Press Enter to continue...")
         
-        return tracking_cords, unused
+        return tracking_cords, unused, tracks_return
                     

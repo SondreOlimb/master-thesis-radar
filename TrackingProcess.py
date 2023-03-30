@@ -1,5 +1,6 @@
 from Tracking.TOMHT import TOMHT
 from Tracking.Initiator import Initiator
+from Plots import PlotCFAR,PlotTracks
 
 def TrackingProcess(SP_data_queue,tracking_queue):
     # Path: TrackingProcess.py
@@ -11,10 +12,14 @@ def TrackingProcess(SP_data_queue,tracking_queue):
     tracker = TOMHT()
     while True:
         data = SP_data_queue.get()
-        if tracker is not None:
-            tracks, unused_measurments = tracker.main(data)
+        if data is not None:
+            cords, unused_measurments,tracks = tracker.main(data)
             detections,tar = initiat.main(unused_measurments)
             if(len(detections)>0):
                 tracker.new_track(tar)
-            print(tracks)
+            if(len(tracks)>0):
+                print(cords)
+                print(track for track in tracks)
+                PlotTracks(cords)
+
         tracking_queue.put(tracks)

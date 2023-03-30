@@ -78,8 +78,11 @@ class MySocket:
         print("Closed socket")
     
         
-def fetch_data(data_queue):
+def fetch_data(data_queue,debug=False):
     print("Started client")
+    debug_data = None
+    if debug:
+        debug_data = np.load("data/best_restult.npy")[100:,0]
     client_socket = MySocket()
     connection = client_socket.connect(host = HOST,port=PORT)
     client_socket.mysend("PSPT".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(1000).to_bytes(4, byteorder="little", signed=False))
@@ -93,9 +96,12 @@ def fetch_data(data_queue):
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
             data = client_socket.myreceive(length)
             
-            if(data_info[:4].decode("utf-8")== "RADC" and length >1 ):
+            if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
                 RADC_data = read_RADC(data,length)
                 data_queue.put(RADC_data)
+            if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
+                data_queue.put(debug_data[0])
+                debug_data = np.delete(debug_data,0,0)
         
         
         except KeyboardInterrupt:

@@ -17,7 +17,7 @@ if __name__ == "__main__":
         tracking_queue = mp.Queue()
         backend_queue = mp.Queue()
 
-        data_fetch = mp.Process(target=client.fetch_data, args=(data_queue,))
+        data_fetch = mp.Process(target=client.fetch_data, args=(data_queue,True))
         data_process = mp.Process(target=SPP, args=(data_queue,SP_data_queue,))
         tracking_process = mp.Process(target=TrackingProcess, args=(SP_data_queue,tracking_queue,))
         #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
