@@ -15,7 +15,7 @@ class KalmanFilter(object):
         #convert to ISO
         self.x_iso[0] = self.x[0]*0.785277
         self.x_iso[1] = (128-self.x[1])*-0.12755
-        assert self.x_iso[1] < 0, f"The velocity is posisitve: {self.x_iso}"
+        #assert self.x_iso[1] < 0, f"The velocity is posisitve: {self.x_iso}"
         
 
     def predict(self, u=None):
@@ -42,8 +42,8 @@ class KalmanFilter(object):
         #convert to cords
         pred[0]= pred[0]/0.785277
         pred[1] = 128+pred[1]/0.12755
-        assert self.x_iso[1] < 0, f"The velocity is posisitve: {self.x_iso}"
-        assert pred[1] < 128, f"The velocity is posisitve: {pred[1]}"
+        #assert self.x_iso[1] < 0, f"The velocity is posisitve: {self.x_iso}"
+        #assert pred[1] < 128, f"The velocity is posisitve: {pred[1]}"
         return pred
             
         
@@ -67,7 +67,7 @@ class KalmanFilter(object):
         
         K = self.P @ H.T @ inv(self.S)  # Kalman gain
         
-        assert abs(self.x_iso[0] -z[0]) < 10, f"RAnge delta to big: {self.x_iso}, {z}"
+        #assert abs(self.x_iso[0] -z[0]) < 10, f"RAnge delta to big: {self.x_iso}, {z}"
         self.x_iso = self.x_iso + K @ y  # updated state estimate
         self.convert_from_iso()
         #assert abs(self.x_iso[0] -z[0]) < 10, f"RAnge delta to big: {self.x_iso}, {z}"

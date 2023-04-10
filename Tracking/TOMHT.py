@@ -209,6 +209,7 @@ class TOMHT:
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
                 tracks_return.append(track.track_three.nodes[best_node]["track"])
+                print(track.track_three.nodes[best_node]["track"])
                 self.pruning(track.track_three,best_node)
             else:
                 self.tracks.remove(track)

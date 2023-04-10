@@ -51,7 +51,7 @@ def read_RPRM(data):
 
     }
 
-def read_RADC(data):
+def read_RADC(data,debug= False):
     length = data["length"]
                     
     data_RADC = data["data"][8:8+length]
@@ -64,19 +64,24 @@ def read_RADC(data):
                     
     data_RADC_I_mean = data_RADC_I
     data_RADC_Q_mean = data_RADC_Q
-    return data_RADC_I_mean[:,:,:] + 1j*data_RADC_Q_mean[:,:,:]
+    procesed_data = data_RADC_I_mean[:,:,:] + 1j*data_RADC_Q_mean[:,:,:]
+    if debug:
+        t = time.localtime()
+        timestamp = time.strftime('%b-%d-%Y_%H%M', t)
+        np.save(f"RADC/RADC-{timestamp}-{time.time_ns()}")
+    return procesed_data
     
     
     
 
-def data_processing(data_queue,raw_data_queue):
+def data_processing(data_queue,raw_data_queue,debug =False):
     print("Started data processing")
     while True:
         try:
         
             data = data_queue.get()
             if(data["type"]== "RADC" and data["length"] >1 ):
-                data_RADC = read_RADC(data)
+                data_RADC = read_RADC(data,debug)
                 
                 if data_RADC:
                     #detection_queue.put(tracking_data)

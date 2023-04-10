@@ -1,6 +1,7 @@
 from SignalProcessing.main import SignalProcesingAlgorithem,Artifacts
 
 def SPP(data_queue,detection_queue):
+    print("Started SignalProvesing")
     # Path: SignalProcessingProcess.py
     # Function: SignalProcesing
     # Input: signal
@@ -15,7 +16,8 @@ def SPP(data_queue,detection_queue):
                 artifacts = Artifacts(data)
             
             else:
-                detection_queue.put( SignalProcesingAlgorithem(data,artifacts))
+                
+                detection_queue.put(SignalProcesingAlgorithem(data,artifacts) )
            
 
    

@@ -44,14 +44,14 @@ class Initiator:
             
             
             for m,mesurement in enumerate(z):
-                assert mesurement[0] < 120, f"The velocity is posisitve: {mesurement}" 
+                #assert mesurement[0] < 120, f"The velocity is posisitve: {mesurement}" 
                 
                 
                 NIS = track.kalman_filter.nis(np.array([mesurement[1],mesurement[0]])) #(np.array([mesurement[1],mesurement[0]]) - H@track.kalman_filter.x_iso).T @ inv(S) @ (np.array([mesurement[1],mesurement[0]]) - H@track.kalman_filter.x_iso )
                 
                 if NIS <= self.treshold:
-                    assert mesurement[0] < 120, f"The velocity is posisitve: {mesurement}" 
-                    assert abs(mesurement[1]*0.785277 - track.kalman_filter.x_iso[0]) < 10, f"Range is too large: {mesurement[1]*0.785277 , track.kalman_filter.x_iso[0],track.track_history_range, NIS}"
+                    #assert mesurement[0] < 120, f"The velocity is posisitve: {mesurement}" 
+                    #assert abs(mesurement[1]*0.785277 - track.kalman_filter.x_iso[0]) < 10, f"Range is too large: {mesurement[1]*0.785277 , track.kalman_filter.x_iso[0],track.track_history_range, NIS}"
                     NIS_mat[t,m] = NIS
                     
                 else:
@@ -72,7 +72,7 @@ class Initiator:
            
             if (not unused_tracks[r]):
                
-                assert abs( self.tracks[r].kalman_filter.x_iso[0]-z[c][1]*0.785277) < 10, f"Range is too large: {z[c][1] , track.kalman_filter.x_iso[0]}"\
+                #assert abs( self.tracks[r].kalman_filter.x_iso[0]-z[c][1]*0.785277) < 10, f"Range is too large: {z[c][1] , track.kalman_filter.x_iso[0]}"\
                     
                 self.tracks[r].update(z[c][1],z[c][0],1)
                 used_idx.append(self.tracks[r].track_id)

@@ -6,8 +6,8 @@ def backend(detection_queue):
         try:
             data = detection_queue.get()
             if data:
-                print(data[1])
-                firebase.ref.child(f'detections/{data[0]}').set(data[1])
+                print(data)
+                #firebase.ref.child(f'detections/{data[0]}').set(data[1])
         except KeyboardInterrupt:
             print("Exited data backend")
             break

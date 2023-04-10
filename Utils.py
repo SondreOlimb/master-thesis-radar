@@ -15,3 +15,7 @@ def read_RADC(data,length):
     data_RADC_Q_mean = data_RADC_Q
     
     return data_RADC_I_mean[0,:,:] + 1j*data_RADC_Q_mean[0,:,:]
+
+def read_PPRM(data):
+    data_PPRM = np.frombuffer(data,dtype=np.uint16)
+    print(data_PPRM)

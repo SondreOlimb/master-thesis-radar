@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
+
 from matplotlib import cm
 import numpy as np
 from scipy import ndimage
@@ -35,6 +35,7 @@ def PlotCFAR(data,labels = {
     plt.title(labels["title"],fontdict = {'fontsize' : 30})
     plt.grid(False)
     plt.savefig(f"plots/CFAR_{time.time_ns()}.png")
+    plt.cla()
 
 
 
@@ -45,10 +46,14 @@ def PlotTracks(tracks):
     plt.plot([det[0] for det in tracks], [det[1] for det in tracks], 'ro',label="Tracking")
     plt.xticks(np.linspace(0,256,9),labels=np.round(np.linspace(0,255*0.785277,9)),size =10)
     plt.yticks(np.linspace(0,256,7),labels=np.round(np.linspace(-0.127552440715*127,0.127552440715*127,7),2),size =10)
+    
+    #plt.xticks(np.linspace(0,256,9),size =10)
+    #plt.yticks(np.linspace(0,256,7),size =10)
     plt.ylabel("Velocity [knots]",fontdict = {'fontsize' : 20})
     plt.xlabel("Range [m]",fontdict = {'fontsize' : 20})
     plt.title("Tracking",fontdict = {'fontsize' : 30})
     plt.grid(False)
     plt.legend()
     plt.savefig(f"plots/tracks/Tracks_{time.time_ns()}.png")
+    plt.close()
     return

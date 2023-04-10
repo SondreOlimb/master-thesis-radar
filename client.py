@@ -78,18 +78,26 @@ class MySocket:
         print("Closed socket")
     
         
-def fetch_data(data_queue,debug=False):
+def fetch_data(data_queue,parameters,settings,debug=False):
     print("Started client")
+    
     debug_data = None
     if debug:
-        debug_data = np.load("data/best_restult.npy")[100:,0]
+        debug_data = np.load("data/data_400_500.npy",mmap_mode="r")
+        
     client_socket = MySocket()
     connection = client_socket.connect(host = HOST,port=PORT)
-    client_socket.mysend("PSPT".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(1000).to_bytes(4, byteorder="little", signed=False))
+    for key, val in parameters.items():
+           client_socket.mysend(f"{key}".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(int(val)).to_bytes(4, byteorder="little", signed=False))
+    for key, val in settings.items():
+           client_socket.mysend(f"{key}".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(int(val)).to_bytes(4, byteorder="little", signed=False))
+
+    #client_socket.mysend("PSPT".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(1000).to_bytes(4, byteorder="little", signed=False))
         #client_socket.mains(queue=data_queue)
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"PPRM".encode("utf-8"))
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"RPRM".encode("utf-8"))
     while True:
+        
         try:
             
             data_info=client_socket.myreceive(8)
@@ -100,8 +108,19 @@ def fetch_data(data_queue,debug=False):
                 RADC_data = read_RADC(data,length)
                 data_queue.put(RADC_data)
             if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
-                data_queue.put(debug_data[0])
-                debug_data = np.delete(debug_data,0,0)
+                if(debug_data.shape[0]==0):
+                    print("finished")
+                    break
+                data_queue.put(debug_data[0,0])
+                
+                debug_data = debug_data[1:]
+            # if(data_info[:4].decode("utf-8")== "PPRM"):
+            #    read_PPRM(data)
+            
+            # if(data_info[:4].decode("utf-8")== "RPRM"):
+            #     read_PPRM(data)
+            
+                
         
         
         except KeyboardInterrupt:
