@@ -43,7 +43,7 @@ def TrackingProcess(SP_data_queue,tracking_queue):
                 if(len(detections)>0):
                     tracker.new_track(tar)
                 if(len(tracks)>0):
-                    print("test",tracks)
+                    
                     current_time = time.localtime()                
                     firebase.ref.child(f'tracks/{time.time_ns()}').set(tracks)
                     save_coords += cords

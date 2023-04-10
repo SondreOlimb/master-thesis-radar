@@ -150,7 +150,7 @@ class TOMHT:
         used_measurements = []
         tracks_return = []
         if len(self.tracks) == 0:
-            return [],measurements ,self.tracks
+            return [],measurements ,[]
         for track in self.tracks:
             
             #create zero hypothesis
@@ -206,11 +206,11 @@ class TOMHT:
             
            
             if self.track_maintainance(track.track_three.nodes[best_node]["score"], track.track_three.nodes[best_node]["track"]):
-                print("test")
+                
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
-                tracks_data  = {"range": track.track_three.nodes[best_node]["track"].x,"vel":track.track_three.nodes[best_node]["track"].xv, "id": track.track_three.nodes[best_node]["track"].track_id}
-                print("werwr",tracks_data)
+                tracks_data  = {"range": int(track.track_three.nodes[best_node]["track"].x),"vel":int(track.track_three.nodes[best_node]["track"].vx), "id": track.track_three.nodes[best_node]["track"].track_id}
+                
                 tracks_return.append(tracks_data)
                 self.pruning(track.track_three,best_node)
             else:
