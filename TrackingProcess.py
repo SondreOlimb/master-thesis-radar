@@ -3,6 +3,10 @@ from Tracking.Initiator import Initiator
 from Plots import PlotCFAR,PlotTracks
 import matplotlib.pyplot as plt
 import numpy as np
+import firebase
+import time
+from datetime import datetime  
+
 
 def TrackingProcess(SP_data_queue,tracking_queue):
     # Path: TrackingProcess.py
@@ -39,6 +43,9 @@ def TrackingProcess(SP_data_queue,tracking_queue):
                 if(len(detections)>0):
                     tracker.new_track(tar)
                 if(len(tracks)>0):
+                    print("test",tracks)
+                    current_time = time.localtime()                
+                    firebase.ref.child(f'tracks/{time.time_ns()}').set(tracks)
                     save_coords += cords
                     #print(cords)
                     #print(track for track in tracks)
@@ -49,6 +56,6 @@ def TrackingProcess(SP_data_queue,tracking_queue):
             #     plt.savefig(f"plots/tracks/Tracks_all.png")
             #     plt.close()
 
-            tracking_queue.put(tracks)
+            #tracking_queue.put(tracks)
    
         

@@ -22,7 +22,7 @@ if __name__ == "__main__":
         data_fetch = mp.Process(target=client.fetch_data, args=(data_queue,parameters,settings,True))
         data_process = mp.Process(target=SPP, args=(data_queue,SP_data_queue,))
         tracking_process = mp.Process(target=TrackingProcess, args=(SP_data_queue,tracking_queue,))
-        data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
+        #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
        
         # loc = Nominatim(user_agent="GetLoc")
         # getLoc = loc.geocode("Trondheim")
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         data_fetch.start()
         data_process.start()
         tracking_process.start()
-        data_backend.start()
+        #data_backend.start()
         while True:
             firebase.ref.child("info").update({"status": "running"})
             firebase.ref.child("info").update({"time": time.time()})
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         data_fetch.join()
         data_process.join()
         tracking_process.join()
-        data_backend.join()
+        #data_backend.join()
         print('Keyboard interrupt received from user')
         firebase.ref.child("info").update({"status": "offline"})
         pass

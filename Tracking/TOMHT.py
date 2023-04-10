@@ -25,7 +25,7 @@ threshold = 0.5
 # Define a class for a track
 class Track_Tree:
     def __init__(self, new_track):
-        print("track initiated")
+        #print("track initiated")
         self.track_three =nx.DiGraph()
         self.track_three.add_nodes_from([(0,{"track":new_track,"score":0,"number":0,"label":"root"})])
         self.node_number = 0
@@ -206,10 +206,12 @@ class TOMHT:
             
            
             if self.track_maintainance(track.track_three.nodes[best_node]["score"], track.track_three.nodes[best_node]["track"]):
+                print("test")
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
-                tracks_return.append(track.track_three.nodes[best_node]["track"])
-                print(track.track_three.nodes[best_node]["track"])
+                tracks_data  = {"range": track.track_three.nodes[best_node]["track"].x,"vel":track.track_three.nodes[best_node]["track"].xv, "id": track.track_three.nodes[best_node]["track"].track_id}
+                print("werwr",tracks_data)
+                tracks_return.append(tracks_data)
                 self.pruning(track.track_three,best_node)
             else:
                 self.tracks.remove(track)
