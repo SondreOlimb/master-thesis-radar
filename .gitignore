@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 radar-a90c0-firebase-adminsdk-rbwyb-294c210c78.json
+.plots
+plots
+data
