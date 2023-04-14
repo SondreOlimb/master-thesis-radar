@@ -1,6 +1,8 @@
 from scipy.signal import detrend
 import numpy as np
-def read_RADC(data,length):
+import time
+
+def read_RADC(data,length,save=False):
     
                     
    
@@ -13,9 +15,12 @@ def read_RADC(data,length):
                     
     data_RADC_I_mean = data_RADC_I
     data_RADC_Q_mean = data_RADC_Q
-    
-    return data_RADC_I_mean[0,:,:] + 1j*data_RADC_Q_mean[0,:,:]
+    data_proc =data_RADC_I_mean[0,:,:] + 1j*data_RADC_Q_mean[0,:,:]
+    if save:
+        np.save(f"data/RADC/{time.time_ns()}.npy",data_proc)
+    return data_proc
 
 def read_PPRM(data):
     data_PPRM = np.frombuffer(data,dtype=np.uint16)
     print(data_PPRM)
+

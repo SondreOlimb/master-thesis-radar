@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from scipy.stats import multivariate_normal, poisson
-
+import logging
 import networkx as nx
 
 # Define the state transition model
@@ -210,7 +210,7 @@ class TOMHT:
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
                 tracks_data  = {"range": int(track.track_three.nodes[best_node]["track"].x),"vel":int(track.track_three.nodes[best_node]["track"].vx), "id": track.track_three.nodes[best_node]["track"].track_id}
-                
+                logging.info(track.track_three.nodes[best_node]["track"])
                 tracks_return.append(tracks_data)
                 self.pruning(track.track_three,best_node)
             else:

@@ -6,15 +6,16 @@ import numpy as np
 import firebase
 import time
 from datetime import datetime  
+import logging
 
 
-def TrackingProcess(SP_data_queue,tracking_queue):
+def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
     # Path: TrackingProcess.py
     # Function: TrackingProcess
     # Input: signal
     # Output: signal
     # Description: This function is used to process the signal
-    print("Started tracking")
+    logging.info("Started tracking")
     # fig = plt.figure(figsize=(10,10))
     
         
@@ -34,7 +35,7 @@ def TrackingProcess(SP_data_queue,tracking_queue):
     tracker = TOMHT()
     i = 0
     save_coords = []
-    while True:
+    while not exit_event.is_set():
             i+=1
             data = SP_data_queue.get()
             if data is not None:

@@ -3,7 +3,7 @@ import numpy as np
 from .Utils import *
 from .KF import KalmanFilter
 from scipy.linalg import inv
-
+import logging
 from scipy.spatial import distance
 from scipy.optimize import linear_sum_assignment
 P_init = np.diag([10, 10])  # initial covariance matrix
@@ -33,7 +33,7 @@ class Initiator:
     def preliminary_track(self, z):
         """Initiates a new track."""
         if( len(self.tracks) == 0 ):
-            print("no tracks")
+            #print("no tracks")
             return z
        
         if z is None:
@@ -114,7 +114,10 @@ class Initiator:
             
        
         for i in col_ind:
-            assert measurments[i,0] < 130, f"The velocity is posisitve: {measurments[i,0]}" 
+            if(measurments[i,0] > 130):
+
+                logging.critical(f"The velocity is posisitve: {measurments[i,0]}" )
+            #assert measurments[i,0] < 130, f"The velocity is posisitve: {measurments[i,0]}" 
             kf =KalmanFilter(dt, np.array([measurments[i,1], measurments[i,0]]),P_init,Q,R)
             track = Track(self.id+1, measurments[i,1], measurments[i,0],kf ,track_age = 0,track_history=deque([1]),track_length=5)
             self.tracks.append(track)
@@ -135,7 +138,10 @@ class Initiator:
         for track in self.tracks:
             delta_r_theoretical = track.kalman_filter.x_iso[1]*50*1e-3
             delta_r_real = max(track.track_history_range)-min(track.track_history_range)
-            assert delta_r_real < 10, f"delta_r_real is too big: {track} \n {delta_r_real} \n {track.track_history_range}"
+            if(delta_r_real > 10):
+                logging.critical(f"delta_r_real is too big: {track} \n {delta_r_real} \n {track.track_history_range}")
+           
+            #assert delta_r_real < 10, f"delta_r_real is too big: {track} \n {delta_r_real} \n {track.track_history_range}"
             if(sum(track.track_history) < N and len(track.track_history) >= M ):
                 delete_tracks.append(track)
                 #print("deleted",track)
