@@ -5,11 +5,14 @@ from SignalProcessingProcess import SPP
 from TrackingProcess import TrackingProcess
 import backend
 import firebase
-# from geopy.geocoders import Nominatim
 import time
-
+# from geopy.geocoders import Nominatim
+import logging_utils
+import logging
 
 if __name__ == "__main__":
+    logging.info('Starting radar system')
+    exit_event = mp.Event() #
 
     try:
         parameters = firebase.ref.child("parameters").get()
@@ -19,41 +22,39 @@ if __name__ == "__main__":
         tracking_queue = mp.Queue()
         backend_queue = mp.Queue()
 
-        data_fetch = mp.Process(target=client.fetch_data, args=(data_queue,parameters,settings,True))
-        data_process = mp.Process(target=SPP, args=(data_queue,SP_data_queue,))
-        tracking_process = mp.Process(target=TrackingProcess, args=(SP_data_queue,tracking_queue,))
+        data_fetch = mp.Process(target=client.fetch_data, args=(exit_event,data_queue,parameters,settings,False))
+        data_process = mp.Process(target=SPP, args=(exit_event,data_queue,SP_data_queue,))
+        tracking_process = mp.Process(target=TrackingProcess, args=(exit_event,SP_data_queue,tracking_queue,))
         #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
        
-        # loc = Nominatim(user_agent="GetLoc")
-        # getLoc = loc.geocode("Trondheim")
-        # firebase.ref.child("info").update({"lat": getLoc.latitude})
-        # firebase.ref.child("info").update({"lng": getLoc.longitude})
+        
 
         data_fetch.start()
         data_process.start()
         tracking_process.start()
         #data_backend.start()
-        while True:
+        while not exit_event.is_set():
             firebase.ref.child("info").update({"status": "running"})
             firebase.ref.child("info").update({"time": time.time()})
+            logging.info("Online")
             time.sleep(60)
             
             
 
 
 
-    except KeyboardInterrupt:   
+    except KeyboardInterrupt: 
+        exit_event.set() # Set the exit event to signal the child processes to exit
+
         data_fetch.join()
         data_process.join()
         tracking_process.join()
         #data_backend.join()
-        print('Keyboard interrupt received from user')
+        logging.info('Exited radar system with keyboard KeyboardInterrupt')
         firebase.ref.child("info").update({"status": "offline"})
         pass
         
-        # data_process.close()
-        # data_fetch.close()
-        # data_backend.close()
+      
 
 
 

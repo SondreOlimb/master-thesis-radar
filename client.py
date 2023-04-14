@@ -3,6 +3,7 @@ HOST = "192.168.16.2"  # The server's hostname or IP address
 PORT = 6172  # The port used by the server
 import numpy as np
 from Utils import *
+import logging
 
 
 
@@ -24,16 +25,14 @@ class MySocket:
     def connect(self, host, port):
         try:
             self.sock.connect((host, port))
-            print("Connected to:")
-            print("HOST: ", host)
-            print("PORT:",port,"\n")
+            logging.info(f"Connected to: HOST: {host},PORT:{port}")
+            
             return True
         except Exception as e :
+
             print(e)
-            print("Failed to connect to:")
-            print("HOST: ", host)
-            print("PORT:",port,"\n")
-            exit()
+            logging.critical(f"Failed to connect to:{e}")
+            return False
             
         
 
@@ -74,12 +73,14 @@ class MySocket:
             })
     def terminate(self):
         self.mysend("GBYE".encode("utf-8"))
+        self.sock.shutdown(socket.SHUT_RDWR)
+        self.sock.close()
         #self.sock.close()
         print("Closed socket")
     
         
-def fetch_data(data_queue,parameters,settings,debug=False):
-    print("Started client")
+def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
+    logging.info("Started client")
     
     debug_data = None
     if debug:
@@ -87,6 +88,8 @@ def fetch_data(data_queue,parameters,settings,debug=False):
         
     client_socket = MySocket()
     connection = client_socket.connect(host = HOST,port=PORT)
+    if(not connection):
+        exit_event.set()
     for key, val in parameters.items():
            client_socket.mysend(f"{key}".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+(int(val)).to_bytes(4, byteorder="little", signed=False))
     for key, val in settings.items():
@@ -96,7 +99,7 @@ def fetch_data(data_queue,parameters,settings,debug=False):
         #client_socket.mains(queue=data_queue)
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"PPRM".encode("utf-8"))
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"RPRM".encode("utf-8"))
-    while True:
+    while not exit_event.is_set():
         
         try:
             
@@ -105,7 +108,7 @@ def fetch_data(data_queue,parameters,settings,debug=False):
             data = client_socket.myreceive(length)
             
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
-                RADC_data = read_RADC(data,length)
+                RADC_data = read_RADC(data,length, False)
                 data_queue.put(RADC_data)
             if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
                 if(debug_data.shape[0]==0):
@@ -121,16 +124,16 @@ def fetch_data(data_queue,parameters,settings,debug=False):
             #     read_PPRM(data)
             
                 
+        except Exception as e :
+           logging.error("Unexpected error:",e)
+           client_socket.terminate()
         
         
-        except KeyboardInterrupt:
-            if connection:
-                    client_socket.terminate()
+    if connection:
+            client_socket.terminate()
                     
-            print("Exiting client")      
-            break
-        if not connection:
-            break
+        
+              
         
     return    
 
