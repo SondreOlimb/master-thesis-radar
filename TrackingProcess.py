@@ -46,7 +46,8 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
                 perliminary_tracks = MHT.get_perliminery()
                 firm_tracks = MHT.get_firm()
                 new_preliminary_tracks,tentativ_tracks = TentativTrack(tentativ_tracks, unused_det)
-                
+                for new_track_i in new_preliminary_tracks:
+                    MHT.new_track(new_track_i)
                 if(len(firm_tracks)>0):
                     
                                   
