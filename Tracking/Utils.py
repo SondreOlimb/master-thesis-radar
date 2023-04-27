@@ -58,8 +58,8 @@ class Track:
             self.track_history.popleft()
         if len(self.track_history_range)>self.track_length:
             self.track_history_range.popleft()
-    def nis(self,z):
-        return self.kalman_filter.nis(z)
+    def nis(self,z,debug = False):
+        return self.kalman_filter.nis(z,debug)
 
     def predict(self):
         """Propagates the state distribution to the current time."""

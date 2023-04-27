@@ -9,7 +9,7 @@ from datetime import datetime
 import logging
 
 
-def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
+def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
     # Path: TrackingProcess.py
     # Function: TrackingProcess
     # Input: signal
@@ -39,7 +39,7 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
             i+=1
             data = SP_data_queue.get()
             if data is not None:
-                cords, unused_measurments,tracks = tracker.main(data)
+                cords, unused_measurments,tracks = tracker.main(data,range_setting=200)
                 detections,tar = initiat.main(unused_measurments)
                 if(len(detections)>0):
                     tracker.new_track(tar)

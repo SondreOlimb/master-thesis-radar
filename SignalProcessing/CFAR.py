@@ -33,6 +33,7 @@ def CFAR_1D(data, guard_cells, training_cells, PFA):
     
 
     detections = detections[detections[:,0] < 120,:] #delete all irelevant detections
+    detections = detections[:,detections[0,:] < 248] #delete all irelevant detections
     detections_cord =  detections.copy()
     detections[:,1] = detections[:,1]*0.785277
     detections[:,0] = (128-detections[:,0])*-0.12755
