@@ -17,14 +17,19 @@ if __name__ == "__main__":
     try:
         parameters = firebase.ref.child("parameters").get()
         settings = firebase.ref.child("settings").get()
+        info = firebase.ref.child("info").get()
         data_queue = mp.Queue()
         SP_data_queue = mp.Queue()
         tracking_queue = mp.Queue()
         backend_queue = mp.Queue()
+        r ="range"
+        v ="speed"
+        gain = "RSRG"
+        logging.warning(f"Range: {info[r]} Velocity:{info[v]} Gain: {settings[gain]}")
 
         data_fetch = mp.Process(target=client.fetch_data, args=(exit_event,data_queue,parameters,settings,False))
         data_process = mp.Process(target=SPP, args=(exit_event,data_queue,SP_data_queue,))
-        tracking_process = mp.Process(target=TrackingProcess, args=(exit_event,SP_data_queue,tracking_queue,))
+        tracking_process = mp.Process(target=TrackingProcess, args=(exit_event,SP_data_queue,tracking_queue,info[r],))
         #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
        
         
@@ -50,7 +55,7 @@ if __name__ == "__main__":
         data_process.join()
         tracking_process.join()
         #data_backend.join()
-        logging.info('Exited radar system with keyboard KeyboardInterrupt')
+        logging.warning('Exited radar system with keyboard KeyboardInterrupt')
         firebase.ref.child("info").update({"status": "offline"})
         pass
         

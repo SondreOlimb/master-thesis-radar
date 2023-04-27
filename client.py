@@ -99,6 +99,7 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
         #client_socket.mains(queue=data_queue)
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"PPRM".encode("utf-8"))
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"RPRM".encode("utf-8"))
+    first = True
     while not exit_event.is_set():
         
         try:
@@ -106,9 +107,17 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
             data_info=client_socket.myreceive(8)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
             data = client_socket.myreceive(length)
+            if first: 
+                #We wat to test of the correct tettogs was set
+                if(data_info[:4].decode("utf-8")== "PPRM"):
+                    read_PPRM(data)
+                
+                if(data_info[:4].decode("utf-8")== "RPRM"):
+                    read_PPRM(data)
+                first =False
             
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
-                RADC_data = read_RADC(data,length, False)
+                RADC_data = read_RADC(data,length, True)
                 data_queue.put(RADC_data)
             if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
                 if(debug_data.shape[0]==0):
@@ -117,11 +126,7 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
                 data_queue.put(debug_data[0,0])
                 
                 debug_data = debug_data[1:]
-            # if(data_info[:4].decode("utf-8")== "PPRM"):
-            #    read_PPRM(data)
             
-            # if(data_info[:4].decode("utf-8")== "RPRM"):
-            #     read_PPRM(data)
             
                 
         except Exception as e :

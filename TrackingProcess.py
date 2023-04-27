@@ -10,7 +10,7 @@ from datetime import datetime
 import logging
 
 
-def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
+def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
     # Path: TrackingProcess.py
     # Function: TrackingProcess
     # Input: signal

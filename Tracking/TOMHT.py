@@ -3,7 +3,15 @@ import numpy as np
 from scipy.stats import multivariate_normal, poisson
 import logging
 import networkx as nx
-
+radar_settings = {
+    40:0.15705541,
+    200:0.785277,
+    70:0.27498872,
+    100:0.39263853,
+    150:0.59047965,
+    200:0.78527706,
+    250:0.9765625
+}
 # Define the state transition model
 F = np.array([[1, 1],
               [0, 1]])
@@ -25,7 +33,7 @@ threshold = 0.5
 # Define a class for a track
 class Track_Tree:
     def __init__(self, new_track):
-        #print("track initiated")
+        
         self.track_three =nx.DiGraph()
         self.track_three.add_nodes_from([(0,{"track":new_track,"score":0,"number":0,"label":"root"})])
         self.node_number = 0
@@ -62,14 +70,12 @@ class Track_Tree:
             if not descendants:
                 leaf_nodes.add(node)
         return leaf_nodes
-    def __str__(self):
-        return str(self.track_three.nodes.data())
      
 # Define a class for the tracker
 class TOMHT:
     def __init__(self):
         self.tracks = []
-        self.treshold = 0.5
+        self.treshold = 5
     
     
     
@@ -81,15 +87,19 @@ class TOMHT:
     
     def gate(self, z,track):
         
-        return track.nis(np.array([z[1],z[0]])) < self.treshold
+       
+        NIS =track.nis(np.array([z[1],z[0]]),debug = False) 
+        # print(NIS)
+        # #input("NIS")
+        # print("\n")
+        return NIS < self.treshold
     
     def get_score(self, track,old_score,z= None ,range =200, ilumination_angle=30):
         lambda_clutter  = 4e-6 # expected nomber of clutter or FA per scan
         lambda_new = 1e-5 # expected nomber of new targets per scan
         lambda_ex = 1e-5 # expected nomber of existing targets per scan
         P_D = 0.9 # probability of detection
-        #area = (np.pi * np.power(range, 2))*ilumination_angle/360
-        #gClutter = lambda_phi * area
+        
 
         
         S = H @ track.kalman_filter.P @ H.T + R
@@ -121,36 +131,35 @@ class TOMHT:
         Returns:
             _type_: _description_
         """
-        delta_r_theoretical = track.kalman_filter.x_iso[1]*50*1e-3/1.94384 #kovert to m/s
+        delta_r_theoretical = track.kalman_filter.x_iso[1]*50*1e-3 #kovert to m/s
         delta_r_real = max(track.track_history_range)-min(track.track_history_range)
-        #print("Track maintainance")
-        #print(track.track_history_range)
-        #print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-        if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
-            # print("REMOVED")
-            # print("Removed",track,score)
-            # print("Track maintainance")
-            # print(track.track_history_range)
-            # print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
-            #input("Press Enter to continue...")
-            return False
-        # if score > treshold:
+        
+        # if delta_r_real < abs(delta_r_theoretical)*len(track.track_history) *0.6:
+        #     print("REMOVED")
         #     print("Removed",track,score)
         #     print("Track maintainance")
         #     print(track.track_history_range)
         #     print(delta_r_real ,abs(delta_r_theoretical)*len(track.track_history) *0.9)
         #     #input("Press Enter to continue...")
+        #     return False
+        if sum(track.track_history) == 0:
+            
+            return False
+        # if(np.std(track.track_history_range) <= 0.1) :
+        #        return False
+           
+            #input("Press Enter to continue...")
         return score < treshold 
 
 
 
-    def main(self,measurements):
+    def main(self,measurements,range_setting=200):
         #print("main")
         tracking_cords = []
         used_measurements = []
         tracks_return = []
         if len(self.tracks) == 0:
-            return [],measurements ,[]
+            return [],measurements,[]
         for track in self.tracks:
             
             #create zero hypothesis
@@ -158,7 +167,7 @@ class TOMHT:
             leaf_nodes = track.get_leaf_nodes()
            
             for node in leaf_nodes:
-                #print(node,track.track_three.nodes[node]["track"])
+                
                 
                 score = self.get_score(track.track_three.nodes[node]["track"],track.track_three.nodes[node]["score"])
                 track_pred = copy.deepcopy(track.track_three.nodes[node]["track"])
@@ -167,7 +176,7 @@ class TOMHT:
                
                 #NEED TO UPDATE THE AGE
                 
-                gated_meas =[] #[meas used_measurements.append(idx) for idx ,meas in enumerate(measurements) if self.gate(meas,track.track_three.nodes[node]["track"])  ]
+                gated_meas =[] 
                 for idx ,meas in enumerate(measurements):
                     if self.gate(meas,track.track_three.nodes[node]["track"]):
                         #print("gated",f"Range:{meas[1]*0.785277}, V:{(128-meas[0])*-0.12755}")
@@ -206,11 +215,10 @@ class TOMHT:
             
            
             if self.track_maintainance(track.track_three.nodes[best_node]["score"], track.track_three.nodes[best_node]["track"]):
-                
                 track.track_three.nodes[best_node]["score"] =0
                 tracking_cords.append(track.track_three.nodes[best_node]["track"].get_state() )
-                tracks_data  = {"range": int(track.track_three.nodes[best_node]["track"].x),"vel":int(track.track_three.nodes[best_node]["track"].vx), "id": track.track_three.nodes[best_node]["track"].track_id}
-                logging.info(track.track_three.nodes[best_node]["track"])
+                tracks_data  = {"range":round( int(track.track_three.nodes[best_node]["track"].x)*radar_settings[range_setting],2),"vel":(round((128-int(track.track_three.nodes[best_node]["track"].vx))*-0.12755,2)), "id": track.track_three.nodes[best_node]["track"].track_id}
+                logging.warning(track.track_three.nodes[best_node]["track"])
                 tracks_return.append(tracks_data)
                 self.pruning(track.track_three,best_node)
             else:
@@ -220,8 +228,9 @@ class TOMHT:
         
         
         unused = np.delete(measurements, used_measurements, axis=0)
+       
         
         #input("Press Enter to continue...")
         
-        return tracking_cords, unused, tracks_return
+        return tracking_cords, unused,tracks_return
                     
