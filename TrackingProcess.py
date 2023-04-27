@@ -1,5 +1,6 @@
-from Tracking.TOMHT import TOMHT
-from Tracking.Initiator import Initiator
+from TrackingV2.KalmanFilterTracker import KalmanFilterTracker,Track_Tree
+from TrackingV2.TentativTrack import TentativTrack
+from TrackingV2.MHT import TOMHT
 from Plots import PlotCFAR,PlotTracks
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,32 +32,24 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
     # plt.grid(False)
     # plt.legend()
     
-    initiat = Initiator(3,5)
-    tracker = TOMHT()
+    
+    MHT = TOMHT()
     i = 0
     save_coords = []
+    tentativ_tracks = []
     while not exit_event.is_set():
             i+=1
             data = SP_data_queue.get()
             if data is not None:
-                cords, unused_measurments,tracks = tracker.main(data)
-                detections,tar = initiat.main(unused_measurments)
-                if(len(detections)>0):
-                    tracker.new_track(tar)
-                if(len(tracks)>0):
+                MHT.Firm(data)
+                unused_det = MHT.Perliminary(unused_det)
+                perliminary_tracks = MHT.get_perliminery()
+                firm_tracks = MHT.get_firm()
+                new_preliminary_tracks,tentativ_tracks = TentativTrack(tentativ_tracks, unused_det)
+                
+                if(len(firm_tracks)>0):
                     
-                    current_time = time.localtime()                
-                    firebase.ref.child(f'tracks/{time.time_ns()}').set(tracks)
-                    save_coords += cords
-                    #print(cords)
-                    #print(track for track in tracks)
-                    #plt.plot([det[0] for det in cords], [det[1] for det in cords], 'ro',label="Tracking")
+                                  
+                    firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
                     
-                    #PlotTracks(save_coords)
-            # if(i==95):
-            #     plt.savefig(f"plots/tracks/Tracks_all.png")
-            #     plt.close()
-
-            #tracking_queue.put(tracks)
-   
         
