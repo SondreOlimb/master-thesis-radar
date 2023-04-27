@@ -1,5 +1,6 @@
 from scipy.ndimage import convolve1d
 import numpy as np
+from sklearn.cluster import DBSCAN
 
 def P_avg(P,N):
     return P
@@ -10,7 +11,7 @@ def estimated_teshold(alpha,P):
     return alpha*np.abs(P)
 
 
-def CFAR_1D(data, guard_cells, training_cells, PFA):
+def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,cluster =True):
     
     
     window_size = guard_cells + training_cells
@@ -33,18 +34,28 @@ def CFAR_1D(data, guard_cells, training_cells, PFA):
     
 
     detections = detections[detections[:,0] < 120,:] #delete all irelevant detections
-    detections = detections[:,detections[0,:] < 248] #delete all irelevant detections
-    detections_cord =  detections.copy()
-    detections[:,1] = detections[:,1]*0.785277
-    detections[:,0] = (128-detections[:,0])*-0.12755
-    
-    det_tuples = [(i[1],i[0]) for i in detections] 
+    detections = np.array(detections,dtype=np.float32)
+    #Convert ti range and m/s
 
-    
-    
-    
+    detections[:,1] = detections[:,1]*range_setting
+    detections[:,0] = (128-detections[:,0])*-0.065614
+    if(detections.shape[0] == 0):
+        return ret ,detections
+    if(cluster):
+        dbscan = DBSCAN(eps=1, min_samples=1)
+        dbscan.fit(detections)
+        labels = dbscan.labels_
+        
+        unique_labels = set(labels)
+        centers = []
+        for label in unique_labels:
+            if label == -1:
+                # Skip outliers
+                continue
+            cluster_points = detections[labels == label]
+            center = np.mean(cluster_points, axis=0)
+            centers.append(center)
+        detections = np.array(centers)
 
-    
-    
             
-    return ret,data*ret,detections,detections_cord,det_tuples
+    return ret,detections

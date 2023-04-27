@@ -53,9 +53,7 @@ def TentativTrack(tracks,detections,dt =50*10**(-3)):
             print("error",euclidian_distance)
             # print(self.potential_targets, measurments)
             print(e)
-    if len(col_ind) >0:
-        
-        print("Perliminary Track: ", detections[col_ind])
+    
    
     return detections[col_ind], unused_detections
 

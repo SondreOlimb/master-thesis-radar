@@ -11,26 +11,9 @@ import logging
 
 
 def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
-    # Path: TrackingProcess.py
-    # Function: TrackingProcess
-    # Input: signal
-    # Output: signal
-    # Description: This function is used to process the signal
+    
     logging.info("Started tracking")
-    # fig = plt.figure(figsize=(10,10))
-    
-        
-    
-    # plt.xticks(np.linspace(0,256,9),labels=np.round(np.linspace(0,255*0.785277,9)),size =10)
-    # plt.yticks(np.linspace(0,256,7),labels=np.round(np.linspace(-0.127552440715*127,0.127552440715*127,7),2),size =10)
-    
-    # #plt.xticks(np.linspace(0,256,9),size =10)
-    # #plt.yticks(np.linspace(0,256,7),size =10)
-    # plt.ylabel("Velocity [knots]",fontdict = {'fontsize' : 20})
-    # plt.xlabel("Range [m]",fontdict = {'fontsize' : 20})
-    # plt.title("Tracking",fontdict = {'fontsize' : 30})
-    # plt.grid(False)
-    # plt.legend()
+   
     
     
     MHT = TOMHT()
@@ -39,9 +22,14 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
     tentativ_tracks = []
     while not exit_event.is_set():
             i+=1
+            
             data = SP_data_queue.get()
+            
+            # if data is None:
+            #     data =  np.empty((0,2))
             if data is not None:
-                MHT.Firm(data)
+                
+                unused_det = MHT.Firm(data)
                 unused_det = MHT.Perliminary(unused_det)
                 perliminary_tracks = MHT.get_perliminery()
                 firm_tracks = MHT.get_firm()
@@ -49,8 +37,8 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
                 for new_track_i in new_preliminary_tracks:
                     MHT.new_track(new_track_i)
                 if(len(firm_tracks)>0):
-                    
-                                  
+                
+                              
                     firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
                     
         

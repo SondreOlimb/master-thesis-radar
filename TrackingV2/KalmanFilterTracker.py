@@ -3,7 +3,7 @@ from scipy.linalg import inv
 from collections import deque
 import networkx as nx
 import matplotlib.pyplot as plt
-from tabulate import tabulate
+
 
 P_init = np.diag([10, 1])  # initial covariance matrix
 
@@ -112,7 +112,7 @@ class KalmanFilterTracker(object):
     
 class Track_Tree:
     def __init__(self,id, detection,track_length=5):
-        print("track initiated")
+        
         self.track_three =nx.DiGraph()
 
         new_track =  KalmanFilterTracker(np.array([detection[1],detection[0]]))
@@ -313,7 +313,7 @@ class Track_Tree:
                 leaf_nodes.add(node)
         return leaf_nodes
     def __str__(self):
-        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history}, Track {self.track_three.nodes[self.selected_node]['track']}"
+        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history},Range std: {np.std(self.track_history_range)} Track {self.track_three.nodes[self.selected_node]['track']}"
 
     
     def get_leaf_nodes_paths(self):
@@ -383,8 +383,7 @@ class Track_Tree:
             for i in range(n):
                 parent = next(self.track_three.predecessors(parent))
         except:
-            
-            print("No parent")
+        
             return
         # Get all descendants of parent
         descendants = set(nx.descendants(self.track_three, parent))

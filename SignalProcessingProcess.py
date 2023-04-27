@@ -10,6 +10,10 @@ def SPP(exit_event,data_queue,detection_queue):
     artifacts = None
     while not exit_event.is_set():
         data = data_queue.get()
+        if data_queue.qsize() > 5:
+            logging.error(f"Data fetch queue: {data_queue.qsize()}")
+        if detection_queue.qsize() > 5:
+            logging.error(f"SP queue: {detection_queue.qsize()}")
         if data is not None:
             
             if artifacts is None:

@@ -65,7 +65,8 @@ class TOMHT:
         self.frame +=1
         GH = []
         if len(self.firm_tracks) == 0:
-            return np.array(detections)
+            
+                return np.array(detections)
         unused_detections = detections.copy()
         used_detections = np.empty((0,2),dtype="float32")
 
@@ -182,7 +183,7 @@ class TOMHT:
                 self.firm_tracks.remove(track)
             
             else:
-                track_dict = {"range": track.x[0],"vel":track.x[1], "id": track.id}
+                track_dict = {"range": round(float(track.x[0]),2),"vel":round(float(track.x[1]),2), "id": track.id}
                 logging.info(track)
                 tracks.append(track_dict)
         return tracks
@@ -194,13 +195,7 @@ class TOMHT:
     def track_maintinance(self):
         
         for track in self.tracks:
-            # if track.status == "firm":
-            #     if sum(track.track_history) > 3:
-            #         self.tracks.remove(track)
-            #         self.firm_tracks.append(track)
-            #         print("Firm")
-            #         print(track)
-            #         input("firm")
+           
             track.Pruning(track.selected_node)
             if track.status == "perliminary":
                 
@@ -218,14 +213,22 @@ class TOMHT:
                    
                     
                     self.tracks.remove(track)
-                    print(track.track_history_range)
-                    print(range_std)
+                    
                     track.status = "firm"
-                    print(track)
-                    print("Firm")
+                    logging.info(f"Initiated tracks: STD:{range_std}, Track:{track}")
+                   
+                    
                     #input("firm")
                     
                     self.firm_tracks.append(track)
+        for track in self.firm_tracks:
+            
+                
+                if(range_std < 0.1 ):
+                    logging.info(f"REMOVED Track becouse of STD: {track}")
+                    self.firm_tracks.remove(track)
+            
+        
                     
     
     def Create_hyp(self,m1,m2,id1,id2):

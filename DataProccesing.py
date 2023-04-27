@@ -2,6 +2,7 @@ import numpy as np
 import struct
 import time
 from scipy.signal import detrend
+import logging
 def read_TDAT(data):
     data_arr = []
     for i in range(0,data["length"],44):
@@ -80,6 +81,7 @@ def data_processing(data_queue,raw_data_queue,debug =False):
         try:
         
             data = data_queue.get()
+            logging.info(f"KMD7:{data_queue.qsize()}")
             if(data["type"]== "RADC" and data["length"] >1 ):
                 data_RADC = read_RADC(data,debug)
                 
