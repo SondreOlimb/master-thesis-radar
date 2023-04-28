@@ -41,7 +41,7 @@ if __name__ == "__main__":
         while not exit_event.is_set():
             firebase.ref.child("info").update({"status": "running"})
             firebase.ref.child("info").update({"time": time.time()})
-            logging.info("Online")
+            logging.critical("Online")
             time.sleep(60)
             
             

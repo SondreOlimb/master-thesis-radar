@@ -130,7 +130,8 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
             
                 
         except Exception as e :
-           logging.error("Unexpected error:",e)
+           logging.critical("Unexpected error, exiting:",e)
+           exit_event.set()
            client_socket.terminate()
         
         

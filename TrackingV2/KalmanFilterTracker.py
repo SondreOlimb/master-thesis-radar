@@ -125,6 +125,7 @@ class Track_Tree:
         self.x = np.array([detection[1],detection[0]])
         self.track_history = deque([1])
         self.track_history_range = deque([detection[1]])
+        self.track_history_vel = deque([detection[0]])
         self.track_length = track_length
         
         self.selected_node = "0"
@@ -135,7 +136,13 @@ class Track_Tree:
         leaf_nodes = self.get_leaf_nodes()
         for node in leaf_nodes:
             self.track_three.nodes[node]['track'].predict()
-
+    def update_range_and_vel_history(self,r,v):
+        self.track_history_range.append(r)
+        if (len(self.track_history_range)>self.track_length):
+            self.track_history_range.popleft()
+        self.track_history_range.append(v)
+        if (len(self.track_history_vel)>self.track_length):
+            self.track_history_vel.popleft()
 
     def get_D2TA(self,detections,frame_number):
         leaf_nodes = self.get_leaf_nodes()
@@ -170,7 +177,7 @@ class Track_Tree:
                 track_copy.update(detections[arg[0]])
                 assert np.array_equal(self.track_three.nodes[node]['track'].x_iso,track_copy.x_iso ), f"Track not updated correctly"
                 self.track_history_range.append(detections[arg[0]][1])
-
+                self.track_history_vel.append(detections[arg[0]][0])
                 self.track_three.add_nodes_from([(str(n)+"_"+str(frame_number)+"_"+ str(arg[0]),{"track":track_copy,"score":D2TA_score[arg[0]]})])
                 self.track_three.add_edge(node,str(n)+"_"+str(frame_number)+"_"+ str(arg[0]))
                 
@@ -313,7 +320,7 @@ class Track_Tree:
                 leaf_nodes.add(node)
         return leaf_nodes
     def __str__(self):
-        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history},Range std: {np.std(self.track_history_range)} Track {self.track_three.nodes[self.selected_node]['track']}"
+        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history},Range std: {np.std(self.track_history_range)} vel std: {np.std(self.track_history_vel)} Track {self.track_three.nodes[self.selected_node]['track']}"
 
     
     def get_leaf_nodes_paths(self):
