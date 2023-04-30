@@ -15,11 +15,7 @@ class TOMHT:
     
     
     
-    # def get_tracks(self):
-    #     tracks = []
-    #     for track in self.tracks:
-            
-    #     return tracks
+   
     
     def Perliminary(self, detections):
         
@@ -68,7 +64,7 @@ class TOMHT:
             
                 return np.array(detections)
         unused_detections = detections.copy()
-        used_detections = np.empty((0,2),dtype="float32")
+        used_detections = np.empty((0,2),dtype="float16")
 
         A_ub = np.array([]) #Hypotese matrix A_ub in documentation
         hyp_ids_lp = np.array([])#

@@ -9,7 +9,7 @@ class KalmanFilter(object):
         self.P = P_init  # initial covariance matrix
         self.Q = Q  # process noise covariance
         self.R = R  # measurement noise covariance
-        self.x_iso = np.array([0,0],dtype="float64")
+        self.x_iso = np.array([0,0],dtype="float16")
         
         self.F = np.array([[1, self.dt], [0, 1]])  # state transition matrix
         #convert to ISO
@@ -51,7 +51,7 @@ class KalmanFilter(object):
     def update(self, z):
         #covert to ISO
      
-        z_iso = np.array((2,1),dtype="float64")
+        z_iso = np.array((2,1),dtype="float16")
         z_iso[0] = z[0]*0.785277
         z_iso[1] = (128-z[1])*-0.0656168
         H = np.array([[1, 0], [0, 1]])  # observation matrix
@@ -71,7 +71,7 @@ class KalmanFilter(object):
 
     def nis(self, z,debug = False):
         #covert to ISO
-        z_iso = np.array((2,1),dtype="float64")
+        z_iso = np.array((2,1),dtype="float16")
         z_iso[0] = z[0]*0.785277
         z_iso[1] = (128-z[1])*-0.0656168
         

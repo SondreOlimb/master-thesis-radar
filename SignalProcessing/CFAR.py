@@ -23,26 +23,26 @@ def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,clus
     kernel = np.ones((1 + (2 * guard_cells) + (2 * training_cells)), dtype=data.dtype)
     kernel[training_cells:training_cells + (2 * guard_cells) + 1] = 0
     
-    res = convolve1d(data.copy(), kernel, mode='wrap')
+    res = convolve1d(data, kernel, mode='wrap')
     
     
     ret = (np.abs(data)>estimated_teshold(a,res))
     
     detections = np.argwhere(ret==True)
-    #Transform cords to range and doppler
-    #print(detections)
+    #Transform cords to ran #print(detections)
     
 
-    detections = detections[detections[:,0] < 120,:] #delete all irelevant detections
-    detections = np.array(detections,dtype=np.float32)
-    #Convert ti range and m/s
+    detections = detections[detections[:,0] < 120,:]#delete all irelevant detections
+    
+    
 
     detections[:,1] = detections[:,1]*range_setting
     detections[:,0] = (128-detections[:,0])*-0.065614
+    detections = detections.astype(np.float16)
     if(detections.shape[0] == 0):
         return ret ,detections
     if(cluster):
-        dbscan = DBSCAN(eps=1, min_samples=1)
+        dbscan = DBSCAN(eps=0.5, min_samples=1)
         dbscan.fit(detections)
         labels = dbscan.labels_
         

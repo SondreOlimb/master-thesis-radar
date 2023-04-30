@@ -13,12 +13,13 @@ import logging
 if __name__ == "__main__":
     logging.info('Starting radar system')
     exit_event = mp.Event() #
+    
 
     try:
         parameters = firebase.ref.child("parameters").get()
         settings = firebase.ref.child("settings").get()
         info = firebase.ref.child("info").get()
-        data_queue = mp.Queue()
+        data_queue =  mp.Queue()
         SP_data_queue = mp.Queue()
         tracking_queue = mp.Queue()
         backend_queue = mp.Queue()

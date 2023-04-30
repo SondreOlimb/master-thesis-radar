@@ -81,7 +81,7 @@ class MySocket:
         
 def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
     logging.info("Started client")
-    
+    time_arr = []
     debug_data = None
     if debug:
         debug_data = np.load("data/data_400_500.npy",mmap_mode="r")
@@ -103,7 +103,7 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
     while not exit_event.is_set():
         
         try:
-            
+            start = time.time()
             data_info=client_socket.myreceive(8)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
             data = client_socket.myreceive(length)
@@ -118,6 +118,7 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
             
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
                 RADC_data = read_RADC(data,length, True)
+                
                 data_queue.put(RADC_data)
             if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
                 if(debug_data.shape[0]==0):
@@ -127,13 +128,14 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
                 
                 debug_data = debug_data[1:]
             
-            
-                
+            end = time.time()
+            time_arr.append(end-start)
+            #logging.critical(f"Client: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")   
         except Exception as e :
            logging.critical("Unexpected error, exiting:",e)
            exit_event.set()
            client_socket.terminate()
-        
+    
         
     if connection:
             client_socket.terminate()

@@ -20,6 +20,7 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
     i = 0
     save_coords = []
     tentativ_tracks = []
+    time_arr = []
     while not exit_event.is_set():
             i+=1
             
@@ -28,7 +29,7 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
             # if data is None:
             #     data =  np.empty((0,2))
             if data is not None:
-                
+                #start = time.time()
                 unused_det = MHT.Firm(data)
                 unused_det = MHT.Perliminary(unused_det)
                 perliminary_tracks = MHT.get_perliminery()
@@ -37,8 +38,10 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
                 for new_track_i in new_preliminary_tracks:
                     MHT.new_track(new_track_i)
                 if(len(firm_tracks)>0):
+
                 
                               
                     firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
-                    
-        
+                #end = time.time()
+                #time_arr.append(end-start)    
+                #logging.info(f"Tracking: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")    

@@ -21,11 +21,12 @@ def DopplerProcessing(adc_data, window_type_1d=None, axis=1, fft_size=256, isClu
     """
    
     if window_type_1d is not None:
-        window = np.hanning(adc_data.shape[axis])
+        window = np.hanning(adc_data.shape[axis],dtype=np.complex64)
         adc_data = adc_data * window
+        
     if isClutterRemoval:
         adc_data = Utils.ClutterRemoval(adc_data, axis=axis)
-    fft = np.fft.fft(adc_data, axis=axis,n=fft_size)
+    fft = np.fft.fft(adc_data, axis=axis,n=fft_size).astype(np.complex64)
     result = np.fft.fftshift(fft , axes=axis)
     result[result == 0] = 1e-10
     
