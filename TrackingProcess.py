@@ -25,16 +25,16 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
             i+=1
             
             data = SP_data_queue.get()
-            
+            drop_count = data[0]
             # if data is None:
             #     data =  np.empty((0,2))
             if data is not None:
                 #start = time.time()
-                unused_det = MHT.Firm(data)
-                unused_det = MHT.Perliminary(unused_det)
+                unused_det = MHT.Firm(data[1],drop_count)
+                unused_det = MHT.Perliminary(unused_det,drop_count)
                 perliminary_tracks = MHT.get_perliminery()
                 firm_tracks = MHT.get_firm()
-                new_preliminary_tracks,tentativ_tracks = TentativTrack(tentativ_tracks, unused_det)
+                new_preliminary_tracks,tentativ_tracks = TentativTrack(tentativ_tracks, unused_det,drop_count)
                 for new_track_i in new_preliminary_tracks:
                     MHT.new_track(new_track_i)
                 if(len(firm_tracks)>0):

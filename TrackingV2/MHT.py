@@ -17,7 +17,7 @@ class TOMHT:
     
    
     
-    def Perliminary(self, detections):
+    def Perliminary(self, detections,drop_count):
         
         GH = []
         selected_nodes = []
@@ -28,7 +28,7 @@ class TOMHT:
         for tr,track in enumerate(self.tracks):
            
 
-            D2TA,selected = track.get_D2TA(detections,self.frame)
+            D2TA,selected = track.get_D2TA(detections,self.frame,drop_count)
             
             if(len(D2TA)>0):
                 GH.append(D2TA)
@@ -57,7 +57,7 @@ class TOMHT:
         self.frame +=1
         self.track_maintinance()
         return unused_detections           
-    def Firm(self, detections):
+    def Firm(self, detections,drop_count):
         self.frame +=1
         GH = []
         if len(self.firm_tracks) == 0:
@@ -75,7 +75,7 @@ class TOMHT:
         
         for tr,track in enumerate(self.firm_tracks):
             
-            det = track.Create_Firm_D2TA(detections,self.frame)
+            det = track.Create_Firm_D2TA(detections,self.frame,drop_count)
             if(len(det)>0):
                 used_detections =np.concatenate((used_detections,det),axis=0)
                 

@@ -100,6 +100,7 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"PPRM".encode("utf-8"))
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"RPRM".encode("utf-8"))
     first = True
+    drop_count =1
     while not exit_event.is_set():
         
         try:
@@ -118,15 +119,12 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
             
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
                 RADC_data = read_RADC(data,length, True)
-                
-                data_queue.put(RADC_data)
-            if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
-                if(debug_data.shape[0]==0):
-                    print("finished")
-                    break
-                data_queue.put(debug_data[0,0])
-                
-                debug_data = debug_data[1:]
+                try:
+                    data_queue.put((drop_count,RADC_data))
+                    drop_count = 1
+                except:
+                    drop_count +=1
+            
             
             end = time.time()
             time_arr.append(end-start)

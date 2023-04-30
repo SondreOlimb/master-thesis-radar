@@ -11,8 +11,11 @@ def SPP(exit_event,data_queue,detection_queue):
     # Description: This function is used to process the signalq
     artifacts = None
     time_arr = []
+    drop_count = 1
     while not exit_event.is_set():
         data = data_queue.get()
+        drop_count += data[0]
+        data = data[1]
         if data_queue.qsize() > 5:
             logging.error(f"Data fetch queue: {data_queue.qsize()}")
         if detection_queue.qsize() > 5:
@@ -23,8 +26,11 @@ def SPP(exit_event,data_queue,detection_queue):
                 artifacts = Artifacts(data)
             
             else:
-                
-                detection_queue.put(SignalProcesingAlgorithem(data,artifacts) )
+                try:
+                    detection_queue.put((drop_count,SignalProcesingAlgorithem(data,artifacts)) )
+                    drop_count =1
+                except:
+                    drop_count +=1
             end = time.time()
             #time_arr.append(end-start)
 

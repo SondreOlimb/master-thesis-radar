@@ -28,8 +28,8 @@ class KalmanFilterTracker(object):
        
         
 
-    def predict(self, u=None):
-        
+    def predict(self,drop_count, u=None):
+        self.F = np.array([[1, self.dt*drop_count], [0, 1]])
         # state transition matrix
         if u is not None:
             B = np.array([[(self.dt**2)/2], [self.dt]])  # control input matrix
@@ -43,9 +43,10 @@ class KalmanFilterTracker(object):
             
         self.P = self.F @ self.P @ self.F.T + self.Q
 
-    def get_prediction(self):
+    def get_prediction(self,drop_count):
         "this function onøy gets the prediction, but doese n"
-                     
+        
+        self.F = np.array([[1, self.dt*drop_count], [0, 1]])             
         pred = self.F @ self.x_iso
         
         return pred
@@ -75,11 +76,11 @@ class KalmanFilterTracker(object):
         self.P = (np.eye(2) - K @ H) @ self.P  # updated covariance matrix
         
 
-    def Mahalanobis(self, z,debug = False):
+    def Mahalanobis(self, z,drop_count):
        
         
         z_iso = np.array((z),dtype="float16")
-        
+        self.F = np.array([[1, self.dt*drop_count], [0, 1]])
         #self.predict()
         H = np.array([[1, 0], [0, 1]])
         P =  self.F @ self.P @ self.F.T + self.Q
@@ -93,7 +94,8 @@ class KalmanFilterTracker(object):
        
         return innovation.T @ np.linalg.inv(S) @ innovation
     
-    def NLLR(self,z):
+    def NLLR(self,z,drop_count):
+        self.F = np.array([[1, self.dt*drop_count], [0, 1]])
         lambda_ex = 1e-5 # expected nomber of existing targets per scan
         P_D = 0.9 # probability of detection
         z_iso = np.array((z),dtype="float16")
@@ -104,6 +106,7 @@ class KalmanFilterTracker(object):
         x_pred =self.F @ self.x_iso
         innovation = z_iso - H @ x_pred
         return 0.5*(innovation.T @ np.linalg.inv(S) @ innovation) +np.log((lambda_ex * np.sqrt(np.linalg.det(2 * np.pi * S))) / P_D)
+        
         
 
     def __str__(self):
@@ -132,10 +135,10 @@ class Track_Tree:
         self.root = "0"
     
     
-    def predict(self):
+    def predict(self,drop_count):
         leaf_nodes = self.get_leaf_nodes()
         for node in leaf_nodes:
-            self.track_three.nodes[node]['track'].predict()
+            self.track_three.nodes[node]['track'].predict(drop_count)
     def update_range_and_vel_history(self,r,v):
         self.track_history_range.append(r)
         if (len(self.track_history_range)>self.track_length):
@@ -144,7 +147,7 @@ class Track_Tree:
         if (len(self.track_history_vel)>self.track_length):
             self.track_history_vel.popleft()
 
-    def get_D2TA(self,detections,frame_number):
+    def get_D2TA(self,detections,frame_number,drop_count):
         leaf_nodes = self.get_leaf_nodes()
         
         D2TA_cornfirmation  =0
@@ -156,8 +159,8 @@ class Track_Tree:
             
             
             
-            self.track_three.nodes[node]['track'].predict()
-            arg_D2TA, confirmed_D2TA_Score,D2TA_score = self.perliminary_D2TA(self.track_three.nodes[node]['track'],detections)
+            self.track_three.nodes[node]['track'].predict(drop_count)
+            arg_D2TA, confirmed_D2TA_Score,D2TA_score = self.perliminary_D2TA(self.track_three.nodes[node]['track'],detections,drop_count)
                
             
             self.track_three.add_nodes_from([(str(n)+"_"+str(frame_number)+"_"+ "zero",self.track_three.nodes[node])])
@@ -203,7 +206,7 @@ class Track_Tree:
         
         return D2TA,selected
     
-    def Create_Firm_D2TA(self,detections, frame_number):
+    def Create_Firm_D2TA(self,detections, frame_number,drop_count):
         """
         This function is used to get the D2TA score for each detection in the frame which pases the gate. 
         nyew hypothesis are created from each D2TA
@@ -216,8 +219,8 @@ class Track_Tree:
         used_detecions = []
         leaf_nodes = self.get_leaf_nodes()
         for n, node in enumerate(leaf_nodes):
-            self.track_three.nodes[node]['track'].predict()
-            arg_D2TA, confirmed_D2TA_Score,D2TA_score = self.Firm_D2TA(self.track_three.nodes[node]['track'],detections,self.track_three.nodes[node]['score'])
+            self.track_three.nodes[node]['track'].predict(drop_count)
+            arg_D2TA, confirmed_D2TA_Score,D2TA_score = self.Firm_D2TA(self.track_three.nodes[node]['track'],detections,self.track_three.nodes[node]['score'],drop_count)
             
             self.track_three.add_nodes_from([(str(n)+"_"+str(frame_number)+"_"+ "zero",self.track_three.nodes[node])])
             
@@ -236,7 +239,7 @@ class Track_Tree:
         if(len(self.track_history)>self.track_length):
             self.track_history.popleft()
         return used_detecions
-    def Firm_D2TA(self,track,detections,CNLLR):
+    def Firm_D2TA(self,track,detections,CNLLR,drop_count):
         
         D2TA =  np.empty(detections.shape[0])
        
@@ -245,8 +248,8 @@ class Track_Tree:
         
         gate_v_H = track.x_iso[1]-velocity_resolution*1.5 #track.x_iso[1]*(1+2/127)
         gate_v_L =track.x_iso[1]+velocity_resolution*1.5 #track.x_iso[1]*(1-2/127)
-        gate_r_L = track.x_iso[0]-range_resolution*1.5# track.x_iso[0] -track.x_iso[1]*dt*2
-        gate_r_H = track.x_iso[0]+range_resolution*1.5 #track.x_iso[0] +track.x_iso[1]*dt*2
+        gate_r_L = track.x_iso[0]-range_resolution*1.5 -np.abs(track.x_iso[1]*dt*(drop_count-1))
+        gate_r_H = track.x_iso[0]+range_resolution*1.5 + np.abs(track.x_iso[1]*dt*(drop_count-1))
         for d,detection in enumerate(detections):
             if detection[1] > gate_r_H or detection[1]< gate_r_L:
                 
@@ -255,7 +258,7 @@ class Track_Tree:
                 
                 D2TA[d] = 10000
             else:
-                NLLR = track.NLLR(np.array([detection[1],detection[0]]))
+                NLLR = track.NLLR(np.array([detection[1],detection[0]]),drop_count)
               
                 D2TA[d] = CNLLR + NLLR
                 
@@ -263,7 +266,7 @@ class Track_Tree:
         return np.argwhere(D2TA != 10000),np.where(D2TA != 10000) ,D2TA
 
 
-    def perliminary_D2TA(self,track,detections,t =50*10**(-3),treshold=5):
+    def perliminary_D2TA(self,track,detections,drop_count,t =50*10**(-3),treshold=5):
         if(detections.shape[1] == 0):
             return np.array([]),np.array([]) ,np.array([])
         
@@ -271,11 +274,11 @@ class Track_Tree:
         
         range_resolution = 0.7852
         velocity_resolution = 0.2362
-        gate = track.x_iso[0] +track.x_iso[1]*dt*2
+        
         gate_v_H = track.x_iso[1]-velocity_resolution #track.x_iso[1]*(1+2/127)
         gate_v_L =track.x_iso[1]+velocity_resolution #track.x_iso[1]*(1-2/127)
-        gate_r_L = track.x_iso[0]-range_resolution# track.x_iso[0] -track.x_iso[1]*dt*2
-        gate_r_H = track.x_iso[0]+range_resolution #track.x_iso[0] +track.x_iso[1]*dt*2
+        gate_r_L = track.x_iso[0]-range_resolution-np.abs(track.x_iso[1]*dt*(drop_count-1))
+        gate_r_H = track.x_iso[0]+range_resolution +np.abs(track.x_iso[1]*dt*(drop_count-1))
         
         for d,detection in enumerate(detections):
             
@@ -286,7 +289,7 @@ class Track_Tree:
                 
                 D2TA[d] = 10000
             else:
-                Mahalanobis = track.Mahalanobis(np.array([detection[1],detection[0]]))
+                Mahalanobis = track.Mahalanobis(np.array([detection[1],detection[0]]),drop_count)
                 if Mahalanobis < treshold: 
                     
                     D2TA[d] = Mahalanobis
@@ -294,6 +297,7 @@ class Track_Tree:
        
         return np.argwhere(D2TA != 10000),np.where(D2TA != 10000) ,D2TA
         
+
 
     def get_prediction(self):
         return self.x, self.P

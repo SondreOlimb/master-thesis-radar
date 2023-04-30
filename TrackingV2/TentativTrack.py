@@ -4,13 +4,14 @@ from scipy.optimize import linear_sum_assignment
 
 
 
-def TentativTrack(tracks,detections,dt =50*10**(-3)):
+def TentativTrack(tracks,detections,drop_count,dt =50*10**(-3)):
     """_summary_
 
     Args:
         tracks (nd.array): an nd array of tentativ tracks [[velocity,range],....]
         detections (_type_): An nd.array of new detections [[velocity,range],....]
     """
+    dt = drop_count*dt
     if(len(tracks)==0):
         return np.array([]),detections
     if(detections.shape[1] == 0):
