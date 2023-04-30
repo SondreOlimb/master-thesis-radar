@@ -383,9 +383,7 @@ class Track_Tree:
         plt.axis('off')
         plt.show()
         
-    def print_matrix(matrix):
-        headers = [f'Path {i+1}' for i in range(len(matrix))]
-        print(tabulate(matrix, headers=headers, tablefmt='orgtbl'))
+    
     def Pruning(self, leaf_node, n=2):
         # Get Nth parent of leaf_node
         

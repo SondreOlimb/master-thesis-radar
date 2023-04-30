@@ -19,8 +19,8 @@ if __name__ == "__main__":
         parameters = firebase.ref.child("parameters").get()
         settings = firebase.ref.child("settings").get()
         info = firebase.ref.child("info").get()
-        data_queue =  mp.Queue()
-        SP_data_queue = mp.Queue()
+        data_queue =  mp.Queue(maxsize=1)
+        SP_data_queue = mp.Queue(maxsize=1)
         tracking_queue = mp.Queue()
         backend_queue = mp.Queue()
         r ="range"
