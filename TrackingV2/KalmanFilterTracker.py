@@ -110,7 +110,7 @@ class KalmanFilterTracker(object):
         
 
     def __str__(self):
-        return f"Range:{self.x_iso[0]}, V:{self.x_iso[1]}"
+        return f"Range:{round(self.x_iso[0],2)}, V:{round(self.x_iso[1],2)}"
     
     
 class Track_Tree:
@@ -324,7 +324,7 @@ class Track_Tree:
                 leaf_nodes.add(node)
         return leaf_nodes
     def __str__(self):
-        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history},Range std: {np.std(self.track_history_range)} vel std: {np.std(self.track_history_vel)} Track {self.track_three.nodes[self.selected_node]['track']}"
+        return f"Track:{self.id} Status:{self.status} Hits:{self.track_history},Range std: {round(np.std(self.track_history_range),2)} vel std: {round(np.std(self.track_history_vel),2)} Track {self.track_three.nodes[self.selected_node]['track']}"
 
     
     def get_leaf_nodes_paths(self):

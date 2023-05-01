@@ -26,10 +26,10 @@ def SPP(exit_event,data_queue,detection_queue):
                 artifacts = Artifacts(data)
             
             else:
-                try:
+                if  detection_queue.empty():
                     detection_queue.put((drop_count,SignalProcesingAlgorithem(data,artifacts)) )
                     drop_count =1
-                except:
+                else:
                     drop_count +=1
             end = time.time()
             #time_arr.append(end-start)

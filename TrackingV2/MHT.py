@@ -221,7 +221,7 @@ class TOMHT:
                 range_std = np.std(track.track_history_range)
                 
                 if(range_std < 0.1 ):
-                    logging.info(f"REMOVED Track becouse of STD: {track}")
+                    
                     self.firm_tracks.remove(track)
             
         

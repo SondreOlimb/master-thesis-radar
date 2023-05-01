@@ -119,10 +119,10 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
             
             if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
                 RADC_data = read_RADC(data,length, True)
-                try:
+                if data_queue.empty():
                     data_queue.put((drop_count,RADC_data))
                     drop_count = 1
-                except:
+                else:
                     drop_count +=1
             
             
