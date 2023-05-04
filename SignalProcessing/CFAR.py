@@ -35,10 +35,10 @@ def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,clus
     detections = detections[detections[:,0] < 120,:]#delete all irelevant detections
     
     
-
+    detections = detections.astype(np.float16)
     detections[:,1] = detections[:,1]*range_setting
     detections[:,0] = (128-detections[:,0])*-0.065614
-    detections = detections.astype(np.float16)
+    #detections = detections.astype(np.float64)
     if(detections.shape[0] == 0):
         return ret ,detections
     if(cluster):

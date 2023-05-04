@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from scipy.optimize import linprog
 import logging
 class TOMHT:
-    def __init__(self):
+    def __init__(self,range_setting):
         self.tracks = []
         self.firm_tracks = []
         self.treshold = 5
         self.frame = 0
         self.track_id = 0
+        self.range_setting = range_setting
     
     
     
@@ -179,7 +180,7 @@ class TOMHT:
                 self.firm_tracks.remove(track)
             
             else:
-                track_dict = {"range": round(float(track.x[0]),2),"vel":round(float(track.x[1]),2), "id": track.id}
+                track_dict = {"range": round(float(track.x[0]),2),"vel":round(float(track.x[1]),3), "id": track.id}
                 logging.info(track)
                 tracks.append(track_dict)
         return tracks
@@ -187,7 +188,7 @@ class TOMHT:
     def new_track(self,detection):
         
         self.track_id +=1 
-        self.tracks.append(Track_Tree(self.track_id,detection))
+        self.tracks.append(Track_Tree(self.track_id,detection,self.range_setting))
     def track_maintinance(self):
         
         for track in self.tracks:
@@ -223,7 +224,8 @@ class TOMHT:
                 if(range_std < 0.1 ):
                     
                     self.firm_tracks.remove(track)
-            
+                if track.x[0] <= 1:
+                    self.firm_tracks.remove(track)
         
                     
     

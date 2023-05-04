@@ -2,7 +2,7 @@ from SignalProcessing.main import SignalProcesingAlgorithem,Artifacts
 import logging
 import time
 import numpy as np
-def SPP(exit_event,data_queue,detection_queue):
+def SPP(exit_event,data_queue,detection_queue,range_setting):
     logging.info("Started SignalProvesing")
     # Path: SignalProcessingProcess.py
     # Function: SignalProcesing
@@ -27,7 +27,7 @@ def SPP(exit_event,data_queue,detection_queue):
             
             else:
                 if  detection_queue.empty():
-                    detection_queue.put((drop_count,SignalProcesingAlgorithem(data,artifacts)) )
+                    detection_queue.put((drop_count,SignalProcesingAlgorithem(data,artifacts,range_setting)) )
                     drop_count =1
                 else:
                     drop_count +=1

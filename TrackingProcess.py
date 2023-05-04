@@ -8,15 +8,16 @@ import firebase
 import time
 from datetime import datetime  
 import logging
+from Utils import check_internet_connection
 
 
-def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
+def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting):
     
     logging.info("Started tracking")
    
     
     
-    MHT = TOMHT()
+    MHT = TOMHT(range_setting)
     i = 0
     save_coords = []
     tentativ_tracks = []
@@ -30,6 +31,7 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
             #     data =  np.empty((0,2))
             if data is not None:
                 #start = time.time()
+                
                 unused_det = MHT.Firm(data[1],drop_count)
                 unused_det = MHT.Perliminary(unused_det,drop_count)
                 perliminary_tracks = MHT.get_perliminery()
@@ -40,8 +42,10 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting=200):
                 if(len(firm_tracks)>0):
 
                 
-                              
-                    firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
+                   
+                        #if check_internet_connection():          
+                            firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
+                    
                 #end = time.time()
                 #time_arr.append(end-start)    
                 #logging.info(f"Tracking: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")    

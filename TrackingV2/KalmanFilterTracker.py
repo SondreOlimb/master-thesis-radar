@@ -14,14 +14,15 @@ R = np.diag([0.785277**2,0.0656168**2])  # measurement noise covariance
 dt = 50*1e-3
 
 class KalmanFilterTracker(object):
-    def __init__(self, x, P_init =P_init, Q=Q, R=R, dt= dt):
+    def __init__(self, x,range_setting, P_init =P_init, Q=Q, R=R, dt= dt):
         self.dt = dt  # time step
+        self.range_setting = range_setting
         self.P = P_init  # initial covariance matrix
         self.Q = Q  # process noise covariance
-        self.R = R  # measurement noise covariance
+        self.R = np.diag([range_setting**2,0.0656168**2])  # measurement noise covariance
         self.x_iso = np.array([0,0],dtype="float16")
         self.x_iso = x
-        self.F = np.array([[1, self.dt], [0, 1]])  # state transition matrix
+        self.F = np.array([[1, self.dt], [0, 1]],dtype ="float16")  # state transition matrix
         
         self.track_history = deque([1])
         
@@ -40,7 +41,7 @@ class KalmanFilterTracker(object):
            
             self.x_iso = self.F @ self.x_iso
             #print(self.x_iso)
-            
+          
         self.P = self.F @ self.P @ self.F.T + self.Q
 
     def get_prediction(self,drop_count):
@@ -110,15 +111,15 @@ class KalmanFilterTracker(object):
         
 
     def __str__(self):
-        return f"Range:{round(self.x_iso[0],2)}, V:{round(self.x_iso[1],2)}"
+        return f"Range:{round(self.x_iso[0],2)}, V:{round(self.x_iso[1],3)}"
     
     
 class Track_Tree:
-    def __init__(self,id, detection,track_length=5):
+    def __init__(self,id, detection,range_setting,track_length=5):
         
         self.track_three =nx.DiGraph()
 
-        new_track =  KalmanFilterTracker(np.array([detection[1],detection[0]]))
+        new_track =  KalmanFilterTracker(np.array([detection[1],detection[0]]),self.range_setting)
         #self.track_three.add_node(detection_id=0,track=new_track)
         self.track_three.add_nodes_from([(0,{"track":new_track,"score":0})])
 
@@ -133,7 +134,7 @@ class Track_Tree:
         
         self.selected_node = "0"
         self.root = "0"
-    
+        self.range_setting = range_setting
     
     def predict(self,drop_count):
         leaf_nodes = self.get_leaf_nodes()

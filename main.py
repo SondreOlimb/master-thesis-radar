@@ -9,6 +9,16 @@ import time
 # from geopy.geocoders import Nominatim
 import logging_utils
 import logging
+from Utils import check_internet_connection
+radar_settings = {
+    "40":0.15705541,
+     
+    "70":0.27498872,
+    "100":0.39263853,
+    "150":0.59047965,
+    "200":0.78527706,
+    "250":0.9765625
+}
 
 if __name__ == "__main__":
     logging.info('Starting radar system')
@@ -16,9 +26,12 @@ if __name__ == "__main__":
     
 
     try:
-        parameters = firebase.ref.child("parameters").get()
-        settings = firebase.ref.child("settings").get()
-        info = firebase.ref.child("info").get()
+        try:
+            parameters = firebase.ref.child("parameters").get()
+            settings = firebase.ref.child("settings").get()
+            info = firebase.ref.child("info").get()
+        except:
+            logging.warning("Firabse lost connection")
         data_queue =  mp.Queue(maxsize=1)
         SP_data_queue = mp.Queue(maxsize=1)
         tracking_queue = mp.Queue()
@@ -29,8 +42,8 @@ if __name__ == "__main__":
         logging.warning(f"Range: {info[r]} Velocity:{info[v]} Gain: {settings[gain]}")
 
         data_fetch = mp.Process(target=client.fetch_data, args=(exit_event,data_queue,parameters,settings,False))
-        data_process = mp.Process(target=SPP, args=(exit_event,data_queue,SP_data_queue,))
-        tracking_process = mp.Process(target=TrackingProcess, args=(exit_event,SP_data_queue,tracking_queue,info[r],))
+        data_process = mp.Process(target=SPP, args=(exit_event,data_queue,SP_data_queue,radar_settings[info[r]],))
+        tracking_process = mp.Process(target=TrackingProcess, args=(exit_event,SP_data_queue,tracking_queue,radar_settings[info[r]],))
         #data_backend = mp.Process(target=backend.backend, args=(tracking_queue,))
        
         
@@ -39,11 +52,15 @@ if __name__ == "__main__":
         data_process.start()
         tracking_process.start()
         #data_backend.start()
+        logging.critical("System online")
         while not exit_event.is_set():
-            firebase.ref.child("info").update({"status": "running"})
-            firebase.ref.child("info").update({"time": time.time()})
-            logging.critical("Online")
-            time.sleep(60)
+            
+                #if check_internet_connection():
+                    firebase.ref.child("info").update({"status": "running"})
+                    firebase.ref.child("info").update({"time": time.time()})
+                    logging.info("Online")
+                    time.sleep(60)
+            
             
             
 
@@ -57,7 +74,11 @@ if __name__ == "__main__":
         tracking_process.join()
         #data_backend.join()
         logging.warning('Exited radar system with keyboard KeyboardInterrupt')
-        firebase.ref.child("info").update({"status": "offline"})
+        try:
+            #if check_internet_connection():
+                firebase.ref.child("info").update({"status": "offline"})
+        except:
+            logging.warning("Firabse lost connection")
         pass
         
       

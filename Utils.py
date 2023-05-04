@@ -2,6 +2,7 @@ from scipy.signal import detrend
 import numpy as np
 import time
 import logging
+import requests
 
 def read_RADC(data,length,save=False):
     if save:
@@ -13,8 +14,8 @@ def read_RADC(data,length,save=False):
     data_RADC = data_RADC.reshape(3,256,512)
     data_RADC_I_raw = data_RADC[:,:,::2]
     data_RADC_Q_raw = data_RADC[:,:,1::2]
-    data_RADC_I = detrend(data_RADC_I_raw, axis=2).astype(np.float16)
-    data_RADC_Q = detrend(data_RADC_Q_raw, axis=2).astype(np.float16)
+    data_RADC_I = detrend(data_RADC_I_raw, axis=2)
+    data_RADC_Q = detrend(data_RADC_Q_raw, axis=2)
                     
     data_RADC_I_mean = data_RADC_I
     data_RADC_Q_mean = data_RADC_Q
@@ -26,4 +27,16 @@ def read_RADC(data,length,save=False):
 def read_PPRM(data):
     data_PPRM = np.frombuffer(data,dtype=np.uint16)
     logging.warning(data_PPRM)
+
+
+
+def check_internet_connection():
+    try:
+        # Send a request to a known website
+        requests.get('https://www.google.com')
+        return True
+    except:
+        # If the request fails, assume no internet connection
+        logging.warning("No internett")
+        return False
 
