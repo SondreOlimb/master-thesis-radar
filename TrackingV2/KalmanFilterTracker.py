@@ -118,7 +118,7 @@ class Track_Tree:
     def __init__(self,id, detection,range_setting,track_length=5):
         
         self.track_three =nx.DiGraph()
-
+        self.range_setting = range_setting
         new_track =  KalmanFilterTracker(np.array([detection[1],detection[0]]),self.range_setting)
         #self.track_three.add_node(detection_id=0,track=new_track)
         self.track_three.add_nodes_from([(0,{"track":new_track,"score":0})])
@@ -134,7 +134,7 @@ class Track_Tree:
         
         self.selected_node = "0"
         self.root = "0"
-        self.range_setting = range_setting
+        
     
     def predict(self,drop_count):
         leaf_nodes = self.get_leaf_nodes()
