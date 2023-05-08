@@ -244,11 +244,11 @@ class Track_Tree:
         
         D2TA =  np.empty(detections.shape[0])
        
-        range_resolution = 0.7852
+        range_resolution = self.range_setting
         velocity_resolution = 0.0656168
         
-        gate_v_H = track.x_iso[1]-velocity_resolution*1.5 #track.x_iso[1]*(1+2/127)
-        gate_v_L =track.x_iso[1]+velocity_resolution*1.5 #track.x_iso[1]*(1-2/127)
+        gate_v_H = track.x_iso[1]-velocity_resolution*1.5 
+        gate_v_L =track.x_iso[1]+velocity_resolution*1.5 
         gate_r_L = track.x_iso[0]-range_resolution*1.5 -np.abs(track.x_iso[1]*dt*(drop_count-1))
         gate_r_H = track.x_iso[0]+range_resolution*1.5 + np.abs(track.x_iso[1]*dt*(drop_count-1))
         for d,detection in enumerate(detections):
@@ -273,11 +273,11 @@ class Track_Tree:
         
         D2TA =  np.empty(detections.shape[0])
         
-        range_resolution = 0.7852
+        range_resolution = self.range_setting
         velocity_resolution = 0.0656168
         
-        gate_v_H = track.x_iso[1]-velocity_resolution #track.x_iso[1]*(1+2/127)
-        gate_v_L =track.x_iso[1]+velocity_resolution #track.x_iso[1]*(1-2/127)
+        gate_v_H = track.x_iso[1]-velocity_resolution 
+        gate_v_L =track.x_iso[1]+velocity_resolution 
         gate_r_L = track.x_iso[0]-range_resolution-np.abs(track.x_iso[1]*dt*(drop_count-1))
         gate_r_H = track.x_iso[0]+range_resolution +np.abs(track.x_iso[1]*dt*(drop_count-1))
         
