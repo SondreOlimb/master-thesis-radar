@@ -4,6 +4,7 @@ PORT = 6172  # The port used by the server
 import numpy as np
 from Utils import *
 import logging
+import time 
 
 
 
@@ -102,9 +103,9 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
     first = True
     drop_count =1
     while not exit_event.is_set():
-        
+       
         try:
-            start = time.time()
+            
             data_info=client_socket.myreceive(8)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
             data = client_socket.myreceive(length)
@@ -116,9 +117,11 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
                 if(data_info[:4].decode("utf-8")== "RPRM"):
                     read_PPRM(data)
                 first =False
-            
-            if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
+           
+            if(data_info[:4].decode("utf-8")== "RADC" and length >1):
+                
                 RADC_data = read_RADC(data,length, save =False)
+
                 if data_queue.empty():
                     
                     data_queue.put((drop_count,RADC_data))
@@ -127,14 +130,13 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
                     drop_count +=1
             
             
-            end = time.time()
-            time_arr.append(end-start)
+                
             #logging.critical(f"Client: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")   
         except Exception as e :
            logging.critical("Unexpected error, exiting:",e)
            exit_event.set()
            client_socket.terminate()
-    
+        
         
     if connection:
             client_socket.terminate()

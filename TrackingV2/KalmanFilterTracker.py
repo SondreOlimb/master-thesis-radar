@@ -245,7 +245,7 @@ class Track_Tree:
         D2TA =  np.empty(detections.shape[0])
        
         range_resolution = 0.7852
-        velocity_resolution = 0.2362
+        velocity_resolution = 0.0656168
         
         gate_v_H = track.x_iso[1]-velocity_resolution*1.5 #track.x_iso[1]*(1+2/127)
         gate_v_L =track.x_iso[1]+velocity_resolution*1.5 #track.x_iso[1]*(1-2/127)
@@ -274,7 +274,7 @@ class Track_Tree:
         D2TA =  np.empty(detections.shape[0])
         
         range_resolution = 0.7852
-        velocity_resolution = 0.2362
+        velocity_resolution = 0.0656168
         
         gate_v_H = track.x_iso[1]-velocity_resolution #track.x_iso[1]*(1+2/127)
         gate_v_L =track.x_iso[1]+velocity_resolution #track.x_iso[1]*(1-2/127)

@@ -21,7 +21,7 @@ def SPP(exit_event,data_queue,detection_queue,range_setting):
         if detection_queue.qsize() > 5:
             logging.error(f"SP queue: {detection_queue.qsize()}")
         if data is not None:
-            #start = time.time()
+            start = time.time()
             if artifacts is None:
                 artifacts = Artifacts(data)
             
@@ -32,7 +32,7 @@ def SPP(exit_event,data_queue,detection_queue,range_setting):
                 else:
                     drop_count +=1
             end = time.time()
-            #time_arr.append(end-start)
+            time_arr.append(end-start)
 
             #logging.info(f"SP: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")
    

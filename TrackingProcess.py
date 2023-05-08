@@ -30,7 +30,7 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting):
             # if data is None:
             #     data =  np.empty((0,2))
             if data is not None:
-                #start = time.time()
+                start = time.time()
                 
                 unused_det = MHT.Firm(data[1],drop_count)
                 unused_det = MHT.Perliminary(unused_det,drop_count)
@@ -46,6 +46,6 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting):
                         #if check_internet_connection():          
                             firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
                     
-                #end = time.time()
-                #time_arr.append(end-start)    
-                #logging.info(f"Tracking: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")    
+                end = time.time()
+                time_arr.append(end-start)    
+                #logging.info(f"Tracking:frame: {end-start} Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")    

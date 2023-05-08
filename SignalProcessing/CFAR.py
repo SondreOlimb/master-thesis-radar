@@ -32,7 +32,7 @@ def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,clus
     #Transform cords to ran #print(detections)
     
 
-    detections = detections[detections[:,0] < 120,:]#delete all irelevant detections
+    #detections = detections[detections[:,0] < 120,:]#delete all irelevant detections
     
     
     detections = detections.astype(np.float16)
