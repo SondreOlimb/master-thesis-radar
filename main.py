@@ -52,7 +52,7 @@ if __name__ == "__main__":
         data_process.start()
         tracking_process.start()
         #data_backend.start()
-        logging.critical("System online")
+        
         while not exit_event.is_set():
             
                 #if check_internet_connection():
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             
             
 
-
+        logging.critical("System online")
 
     except KeyboardInterrupt: 
         exit_event.set() # Set the exit event to signal the child processes to exit

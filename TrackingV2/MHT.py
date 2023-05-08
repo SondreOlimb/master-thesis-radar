@@ -187,7 +187,9 @@ class TOMHT:
     
     def new_track(self,detection):
         
-        self.track_id +=1 
+        self.track_id +=1
+        if self.track_id > 10000:
+            self.track_id = 0 
         self.tracks.append(Track_Tree(self.track_id,detection,self.range_setting))
     def track_maintinance(self):
         
@@ -212,7 +214,7 @@ class TOMHT:
                     self.tracks.remove(track)
                     
                     track.status = "firm"
-                    logging.info(f"Initiated tracks: STD:{range_std}, Track:{track}")
+                    #logging.info(f"Initiated tracks: STD:{range_std}, Track:{track}")
                    
                     
                     #input("firm")
