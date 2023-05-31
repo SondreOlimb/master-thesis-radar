@@ -13,9 +13,7 @@ class TOMHT:
         self.frame = 0
         self.track_id = 0
         self.range_setting = range_setting
-    
-    
-    
+
    
     
     def Perliminary(self, detections,drop_count):
@@ -169,20 +167,31 @@ class TOMHT:
         return tracks
     def get_firm(self):
         tracks = []
+        track_range = []
+        track_vel =[]
         for track in self.firm_tracks:
             if(sum(track.track_history)==0):
+               
                 self.firm_tracks.remove(track)
             
                
         for track in self.firm_tracks:
             
-            if(np.isin(track.x,tracks).any()):
+            
+            if(np.isin(round(track.x[0],1),track_range).any()):
+               
+                self.firm_tracks.remove(track)
+            elif(track.x[0]<1):
+                
                 self.firm_tracks.remove(track)
             
             else:
-                track_dict = {"range": round(float(track.x[0]),2),"vel":round(float(track.x[1]),3), "id": track.id}
+                
+                track_dict = {"range": round(float(track.x[0]),2),"vel":round(float(track.x[1]),2), "id": track.id}
                 logging.info(track)
                 tracks.append(track_dict)
+                track_range.append(round(track.x[0],0))
+                track_vel.append(round(track.x[1],3))
         return tracks
     
     def new_track(self,detection):
@@ -194,9 +203,10 @@ class TOMHT:
     def track_maintinance(self):
         
         for track in self.tracks:
-           
+            std = np.abs(track.x[1])*50*1e-3*0
             track.Pruning(track.selected_node)
             if track.status == "perliminary":
+
                 
                 range_std = np.std(track.track_history_range)
                 if sum(track.track_history) < 3 and len(track.track_history) == 5:
@@ -205,16 +215,16 @@ class TOMHT:
                     
                    
                 
-                elif(range_std < 0.1 and len(track.track_history) == 5):
+                elif(range_std < std and len(track.track_history) == 5):
                     self.tracks.remove(track) 
                     
-                elif sum(track.track_history) > 3 and range_std>0.1:
-                   
+                elif sum(track.track_history) > 3 and range_std>std:
+                    print(std)
                     
                     self.tracks.remove(track)
                     
                     track.status = "firm"
-                    #logging.info(f"Initiated tracks: STD:{range_std}, Track:{track}")
+                    #logging.info(f"INITIATED tracks: STD:{range_std}, Track:{track}")
                    
                     
                     #input("firm")
@@ -222,11 +232,13 @@ class TOMHT:
                     self.firm_tracks.append(track)
         for track in self.firm_tracks:
                 range_std = np.std(track.track_history_range)
+                std = np.abs(track.x[1])*50*1e-3*0.7
+                print(std)
                 
-                if(range_std < 0.1 ):
+                if(range_std < std ):
                     
                     self.firm_tracks.remove(track)
-                if track.x[0] <= 1:
+                elif track.x[0] <= 1:
                     self.firm_tracks.remove(track)
         
                     

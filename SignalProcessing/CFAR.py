@@ -27,7 +27,7 @@ def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,clus
     
     
     ret = (np.abs(data)>estimated_teshold(a,res))
-    
+    ret[84 :95,201:215]=False
     detections = np.argwhere(ret==True)
     #Transform cords to ran #print(detections)
     
@@ -42,7 +42,7 @@ def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,clus
     if(detections.shape[0] == 0):
         return ret ,detections
     if(cluster):
-        dbscan = DBSCAN(eps=0.5, min_samples=1)
+        dbscan = DBSCAN(eps=2, min_samples=1)
         dbscan.fit(detections)
         labels = dbscan.labels_
         

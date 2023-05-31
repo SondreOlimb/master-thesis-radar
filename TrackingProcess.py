@@ -43,9 +43,9 @@ def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting):
 
                 
                    
-                        #if check_internet_connection():          
+                            
                             firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
                     
                 end = time.time()
                 time_arr.append(end-start)    
-                #logging.info(f"Tracking:frame: {end-start} Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")    
+                

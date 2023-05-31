@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 
 P_init = np.diag([10, 1])  # initial covariance matrix
 
-Q = np.diag([0.1, 0])  # process noise covariance
+Q = np.diag([0.001,0.001]) # process noise covariance
 R = np.diag([0.785277**2,0.0656168**2])  # measurement noise covariance
 # R = np.array([[  4.11455458 ,-16.52043271],
 #  [-16.52043271 , 66.33152914]])
+dt = 50*1e-3
+G = np.array([[dt**2/2],[dt]])
 dt = 50*1e-3
 
 class KalmanFilterTracker(object):
@@ -23,7 +25,7 @@ class KalmanFilterTracker(object):
         self.x_iso = np.array([0,0],dtype="float16")
         self.x_iso = x
         self.F = np.array([[1, self.dt], [0, 1]],dtype ="float16")  # state transition matrix
-        
+        self.G = G
         self.track_history = deque([1])
         
        
@@ -32,17 +34,13 @@ class KalmanFilterTracker(object):
     def predict(self,drop_count, u=None):
         self.F = np.array([[1, self.dt*drop_count], [0, 1]])
         # state transition matrix
-        if u is not None:
-            B = np.array([[(self.dt**2)/2], [self.dt]])  # control input matrix
-            self.x_iso = self.F @ self.x_iso + B @ u
-                      
-        else:
-            
+        
+     
            
-            self.x_iso = self.F @ self.x_iso
-            #print(self.x_iso)
+        self.x_iso = self.F @ self.x_iso
+            
           
-        self.P = self.F @ self.P @ self.F.T + self.Q
+        self.P = self.F @ self.P @ self.F.T + self.G*self.Q*self.G.T
 
     def get_prediction(self,drop_count):
         "this function onøy gets the prediction, but doese n"
@@ -84,7 +82,7 @@ class KalmanFilterTracker(object):
         self.F = np.array([[1, self.dt*drop_count], [0, 1]])
         #self.predict()
         H = np.array([[1, 0], [0, 1]])
-        P =  self.F @ self.P @ self.F.T + self.Q
+        P =  self.F @ self.P @ self.F.T + + self.G*self.Q*self.G.T
         S = H @ P @ H.T + self.R
         K = self.P @ H.T @ np.linalg.inv(S)
         x_pred =self.F @ self.x_iso
@@ -101,12 +99,12 @@ class KalmanFilterTracker(object):
         P_D = 0.9 # probability of detection
         z_iso = np.array((z),dtype="float16")
         H = np.array([[1, 0], [0, 1]])
-        P =  self.F @ self.P @ self.F.T + self.Q
+        P =  self.F @ self.P @ self.F.T + + self.G*self.Q*self.G.T
         S = H @ P @ H.T + self.R
         K = self.P @ H.T @ np.linalg.inv(S)
         x_pred =self.F @ self.x_iso
         innovation = z_iso - H @ x_pred
-        return 0.5*(innovation.T @ np.linalg.inv(S) @ innovation) +np.log((lambda_ex * np.sqrt(np.linalg.det(2 * np.pi * S))) / P_D)
+        return (innovation.T @ np.linalg.inv(S) @ innovation), 0.5*(innovation.T @ np.linalg.inv(S) @ innovation) +np.log((lambda_ex * np.sqrt(np.linalg.det(2 * np.pi * S))) / P_D)
         
         
 
@@ -252,22 +250,18 @@ class Track_Tree:
         gate_r_L = track.x_iso[0]-range_resolution*1.5 -np.abs(track.x_iso[1]*dt*(drop_count-1))
         gate_r_H = track.x_iso[0]+range_resolution*1.5 + np.abs(track.x_iso[1]*dt*(drop_count-1))
         for d,detection in enumerate(detections):
-            if detection[1] > gate_r_H or detection[1]< gate_r_L:
-                
-                D2TA[d] = 10000
-            elif detection[0] < gate_v_H or detection[0] > gate_v_L:
-                
-                D2TA[d] = 10000
-            else:
-                NLLR = track.NLLR(np.array([detection[1],detection[0]]),drop_count)
-              
-                D2TA[d] = CNLLR + NLLR
+            
+                mah, NLLR = track.NLLR(np.array([detection[1],detection[0]]),drop_count)
+                if mah < 10:
+                    D2TA[d] = CNLLR + NLLR
+                else:
+                    D2TA[d] = 10000
                 
        
         return np.argwhere(D2TA != 10000),np.where(D2TA != 10000) ,D2TA
 
 
-    def perliminary_D2TA(self,track,detections,drop_count,t =50*10**(-3),treshold=5):
+    def perliminary_D2TA(self,track,detections,drop_count,t =50*10**(-3),treshold=10):
         if(detections.shape[1] == 0):
             return np.array([]),np.array([]) ,np.array([])
         
@@ -283,13 +277,7 @@ class Track_Tree:
         
         for d,detection in enumerate(detections):
             
-            if detection[1] > gate_r_H or detection[1]< gate_r_L:
-                
-                D2TA[d] = 10000
-            elif detection[0] < gate_v_H or detection[0] > gate_v_L:
-                
-                D2TA[d] = 10000
-            else:
+            
                 Mahalanobis = track.Mahalanobis(np.array([detection[1],detection[0]]),drop_count)
                 if Mahalanobis < treshold: 
                     
@@ -325,7 +313,7 @@ class Track_Tree:
                 leaf_nodes.add(node)
         return leaf_nodes
     def __str__(self):
-        return f"Track:{self.id} {self.track_three.nodes[self.selected_node]['track']} \n Hits: {self.track_history}, Hist Range: {self.track_history_range}"
+        return f"Track:{self.id} {self.track_three.nodes[self.selected_node]['track']} \n Hits: {self.track_history} "
 
     
     def get_leaf_nodes_paths(self):

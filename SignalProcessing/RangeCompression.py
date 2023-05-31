@@ -18,8 +18,8 @@ def RangeCompression(adc_data, window_type_1d=None, axis=0 ,fft_size=256):
         Range processed data.
 
     """
-    if window_type_1d is not None:
-        window = np.hanning(adc_data.shape[axis],dtype=np.complex64)
-        adc_data = adc_data * window
+    
+    window = np.hanning(adc_data.shape[axis])
+    adc_data = adc_data * window
 
     return np.fft.fft(adc_data, axis=axis,n=fft_size).astype(np.complex64)
