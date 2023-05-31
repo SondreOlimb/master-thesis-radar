@@ -1,5 +1,6 @@
 from scipy.ndimage import convolve1d
 import numpy as np
+from sklearn.cluster import DBSCAN
 
 def P_avg(P,N):
     return P
@@ -10,7 +11,7 @@ def estimated_teshold(alpha,P):
     return alpha*np.abs(P)
 
 
-def CFAR_1D(data, guard_cells, training_cells, PFA):
+def CFAR_1D(data, guard_cells, training_cells, PFA,range_setting = 0.785277,cluster =True):
     
     
     window_size = guard_cells + training_cells
@@ -22,28 +23,39 @@ def CFAR_1D(data, guard_cells, training_cells, PFA):
     kernel = np.ones((1 + (2 * guard_cells) + (2 * training_cells)), dtype=data.dtype)
     kernel[training_cells:training_cells + (2 * guard_cells) + 1] = 0
     
-    res = convolve1d(data.copy(), kernel, mode='wrap')
+    res = convolve1d(data, kernel, mode='wrap')
     
     
     ret = (np.abs(data)>estimated_teshold(a,res))
-    
+    ret[84 :95,201:215]=False
     detections = np.argwhere(ret==True)
-    #Transform cords to range and doppler
-    #print(detections)
+    #Transform cords to ran #print(detections)
     
 
-    detections = detections[detections[:,0] < 120,:] #delete all irelevant detections
-    detections_cord =  detections.copy()
-    detections[:,1] = detections[:,1]*0.785277
-    detections[:,0] = (128-detections[:,0])*-0.12755
+    #detections = detections[detections[:,0] < 120,:]#delete all irelevant detections
     
-    det_tuples = [(i[1],i[0]) for i in detections] 
+    
+    detections = detections.astype(np.float16)
+    detections[:,1] = detections[:,1]*range_setting
+    detections[:,0] = (128-detections[:,0])*-0.065614
+    #detections = detections.astype(np.float64)
+    if(detections.shape[0] == 0):
+        return ret ,detections
+    if(cluster):
+        dbscan = DBSCAN(eps=2, min_samples=1)
+        dbscan.fit(detections)
+        labels = dbscan.labels_
+        
+        unique_labels = set(labels)
+        centers = []
+        for label in unique_labels:
+            if label == -1:
+                # Skip outliers
+                continue
+            cluster_points = detections[labels == label]
+            center = np.mean(cluster_points, axis=0)
+            centers.append(center)
+        detections = np.array(centers)
 
-    
-    
-    
-
-    
-    
             
-    return ret,data*ret,detections,detections_cord,det_tuples
+    return ret,detections

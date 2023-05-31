@@ -4,6 +4,7 @@ PORT = 6172  # The port used by the server
 import numpy as np
 from Utils import *
 import logging
+import time 
 
 
 
@@ -81,7 +82,7 @@ class MySocket:
         
 def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
     logging.info("Started client")
-    
+    time_arr = []
     debug_data = None
     if debug:
         debug_data = np.load("data/data_400_500.npy",mmap_mode="r")
@@ -99,33 +100,41 @@ def fetch_data(exit_event,data_queue,parameters,settings,debug=False):
         #client_socket.mains(queue=data_queue)
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"PPRM".encode("utf-8"))
     client_socket.mysend("DSF1".encode("utf-8")+(4).to_bytes(4, byteorder="little", signed=False)+"RPRM".encode("utf-8"))
+    first = True
+    drop_count =1
     while not exit_event.is_set():
-        
+       
         try:
             
             data_info=client_socket.myreceive(8)
             length=int.from_bytes(data_info[4:8], byteorder="little", signed=False)
             data = client_socket.myreceive(length)
-            
-            if(data_info[:4].decode("utf-8")== "RADC" and length >1 and debug==False ):
-                RADC_data = read_RADC(data,length, False)
-                data_queue.put(RADC_data)
-            if(debug and data_info[:4].decode("utf-8")== "RADC" and length >1):
-                if(debug_data.shape[0]==0):
-                    print("finished")
-                    break
-                data_queue.put(debug_data[0,0])
+            if first: 
+                #We wat to test of the correct tettogs was set
+                if(data_info[:4].decode("utf-8")== "PPRM"):
+                    read_PPRM(data)
                 
-                debug_data = debug_data[1:]
-            # if(data_info[:4].decode("utf-8")== "PPRM"):
-            #    read_PPRM(data)
+                if(data_info[:4].decode("utf-8")== "RPRM"):
+                    read_PPRM(data)
+                first =False
+           
+            if(data_info[:4].decode("utf-8")== "RADC" and length >1):
+                
+                RADC_data = read_RADC(data,length, save =False)
+
+                if data_queue.empty():
+                    
+                    data_queue.put((drop_count,RADC_data))
+                    drop_count = 1
+                else:
+                    drop_count +=1
             
-            # if(data_info[:4].decode("utf-8")== "RPRM"):
-            #     read_PPRM(data)
             
                 
+            #logging.critical(f"Client: Mean{np.mean(time_arr)},STD: {np.std(time_arr)}")   
         except Exception as e :
-           logging.error("Unexpected error:",e)
+           logging.critical("Unexpected error, exiting:",e)
+           exit_event.set()
            client_socket.terminate()
         
         

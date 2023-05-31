@@ -1,5 +1,6 @@
-from Tracking.TOMHT import TOMHT
-from Tracking.Initiator import Initiator
+from TrackingV2.KalmanFilterTracker import KalmanFilterTracker,Track_Tree
+from TrackingV2.TentativTrack import TentativTrack
+from TrackingV2.MHT import TOMHT
 from Plots import PlotCFAR,PlotTracks
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,56 +8,44 @@ import firebase
 import time
 from datetime import datetime  
 import logging
+from Utils import check_internet_connection
 
 
-def TrackingProcess(exit_event,SP_data_queue,tracking_queue):
-    # Path: TrackingProcess.py
-    # Function: TrackingProcess
-    # Input: signal
-    # Output: signal
-    # Description: This function is used to process the signal
+def TrackingProcess(exit_event,SP_data_queue,tracking_queue,range_setting):
+    
     logging.info("Started tracking")
-    # fig = plt.figure(figsize=(10,10))
+   
     
-        
     
-    # plt.xticks(np.linspace(0,256,9),labels=np.round(np.linspace(0,255*0.785277,9)),size =10)
-    # plt.yticks(np.linspace(0,256,7),labels=np.round(np.linspace(-0.127552440715*127,0.127552440715*127,7),2),size =10)
-    
-    # #plt.xticks(np.linspace(0,256,9),size =10)
-    # #plt.yticks(np.linspace(0,256,7),size =10)
-    # plt.ylabel("Velocity [knots]",fontdict = {'fontsize' : 20})
-    # plt.xlabel("Range [m]",fontdict = {'fontsize' : 20})
-    # plt.title("Tracking",fontdict = {'fontsize' : 30})
-    # plt.grid(False)
-    # plt.legend()
-    
-    initiat = Initiator(3,5)
-    tracker = TOMHT()
+    MHT = TOMHT(range_setting)
     i = 0
     save_coords = []
+    tentativ_tracks = []
+    time_arr = []
     while not exit_event.is_set():
             i+=1
+            
             data = SP_data_queue.get()
+            drop_count = data[0]
+            # if data is None:
+            #     data =  np.empty((0,2))
             if data is not None:
-                cords, unused_measurments,tracks = tracker.main(data)
-                detections,tar = initiat.main(unused_measurments)
-                if(len(detections)>0):
-                    tracker.new_track(tar)
-                if(len(tracks)>0):
-                    
-                    current_time = time.localtime()                
-                    firebase.ref.child(f'tracks/{time.time_ns()}').set(tracks)
-                    save_coords += cords
-                    #print(cords)
-                    #print(track for track in tracks)
-                    #plt.plot([det[0] for det in cords], [det[1] for det in cords], 'ro',label="Tracking")
-                    
-                    #PlotTracks(save_coords)
-            # if(i==95):
-            #     plt.savefig(f"plots/tracks/Tracks_all.png")
-            #     plt.close()
+                start = time.time()
+                
+                unused_det = MHT.Firm(data[1],drop_count)
+                unused_det = MHT.Perliminary(unused_det,drop_count)
+                perliminary_tracks = MHT.get_perliminery()
+                firm_tracks = MHT.get_firm()
+                new_preliminary_tracks,tentativ_tracks = TentativTrack(tentativ_tracks, unused_det,drop_count)
+                for new_track_i in new_preliminary_tracks:
+                    MHT.new_track(new_track_i)
+                if(len(firm_tracks)>0):
 
-            #tracking_queue.put(tracks)
-   
-        
+                
+                   
+                            
+                            firebase.ref.child(f'tracks/{time.time_ns()}').set(firm_tracks)
+                    
+                end = time.time()
+                time_arr.append(end-start)    
+                
